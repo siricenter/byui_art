@@ -1,0 +1,19 @@
+@charset "utf-8";
+/* $ShowCase v1.2 jQuery Plugin             
+Author: Crusader 12 / July 2012			
+Website: www.Crusader12.com				
+Exclusive to: http://www.codecanyon.net  
+If you did not purchase this plugin from Code Canyon, please notify us at info@Crusader12.com
+***************************************************************************************************
+NOTE! THIS FILE IS THE MASTER STYLESHEET FOR SHOWCASE, DO NOT EDIT.
+***************************************************************************************************/
+.showcase {position:relative;}/* MAIN SHOWCASE CONTAINER */
+.showcase_tooltip {position:absolute;z-index:9;overflow:hidden;}/* TOOLTIP STYLES */
+div.tooltip_content {overflow:hidden;cursor:default;display:none;}/* CONTENT DIV INSIDE TOOLTIP */
+div.tooltip_content a {text-decoration:none;cursor:pointer;}/* TOOLTIP ANCHORS */
+.SC_Lightbox {position:absolute;overflow:hidden;z-index:999999;width:0px;height:0px;top:0px;left:0px;display:none}
+.SC_Lightbox .control {float:right;cursor:pointer;}
+.SC_Lightbox h2,#SC_Lightbox p {cursor:default;}/* LIGHTBOX HEADER */
+.SC_Lightbox a {text-decoration:none;cursor:pointer;}/* LIGHTBOX LINKS */
+.SC_Lightbox img {cursor:default;outline:none;}
+.SC_Lightbox_Content, .SC_Lightbox_Content_Container {display:none;} /* HOLDS LIGHTBOX CONTENT */

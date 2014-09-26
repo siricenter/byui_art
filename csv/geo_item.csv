@@ -1,0 +1,10 @@
+geo_item.id,geo_item.f_name,geo_item.f_collection_id,geo_item.f_description,geo_item.f_image,geo_item.f_categories,geo_item.f_tags,geo_item.f_featured
+1,Koi,3,A Japanese fish,||,||,||,True
+2,Goldfish,3,A small and... gold... fish.,||,||,||,False
+3,Starfish,3,It's a star shaped fish.,||,||,||,False
+4,Fish,2,A really old fish fossil,||,||,||,False
+5,Dinosaur bones,2,Dunno what it is,||,||,||,False
+8,Geode1,1,I know nothing about geodes but the name.,||,||,||,False
+9,Geode2,1,Another one for testing,||,||,||,False
+10,T Rex,4,It's the little fake fossil.,||,||,||,False
+11,More,4,Something else will go in there.,||,||,||,False

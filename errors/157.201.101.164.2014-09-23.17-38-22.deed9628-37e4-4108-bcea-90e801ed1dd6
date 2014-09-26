@@ -1,0 +1,849 @@
+(dp1
+S'output'
+p2
+S"<class 'sqlite3.IntegrityError'> foreign key constraint failed"
+p3
+sS'layer'
+p4
+S'/home/SIRI/web2py/applications/byui_art/controllers/cms.py'
+p5
+sS'code'
+p6
+S'# coding: utf8\n# TODO: Determine group architecture and edit the  @auth.requires fields as needed\n\n# Membership booleans:\nadmin = auth.has_membership(\'admin\')\ncollection_admin = auth.has_membership(\'collection_admin\')\ncomment_moderator = auth.has_membership(\'comment_moderator\')\n\n@auth.requires(admin)\ndef exhibits_manage():\n    response.metatitle += " - Exhibit Management"\n    response.title = "Exhibit"\n    response.subtitle = "Management"\n    db.geo_exhibit.f_qrcode.writable = False\n    form = SQLFORM.smartgrid(db.geo_exhibit,links_in_grid=False,\n        oncreate=exhi_create)\n    return dict(form=form)\n\n@auth.requires(collection_admin or admin)\ndef display_manage():\n    response.metatitle += " - Collection Management"\n    response.title = "Collection"\n    response.subtitle = "Management"\n    db.geo_collection.f_qrcode.writable = False\n    form = SQLFORM.smartgrid(db.geo_collection,links_in_grid=False,\n        oncreate=coll_create)\n    return dict(form=form)\n\n@auth.requires(collection_admin or admin)\ndef items_manage():\n    response.metatitle += " - Item Management"\n    response.title = "Item"\n    response.subtitle = "Management"\n    db.geo_item.f_qrcode.writable = False\n    db.geo_item.f_thumb.writable = False\n    form = SQLFORM.smartgrid(db.geo_item,links_in_grid=False,oncreate=item_create,onupdate=item_create,\n        fields=(\n            db.geo_item.id,\n            db.geo_item.f_name,\n            db.geo_item.f_collection_id,\n            db.geo_item.f_description,\n            db.geo_item.f_tagline,\n            db.geo_item.f_featured,\n            db.geo_item.is_active,\n            db.geo_item.f_qrcode))\n    return dict(form=form)\n\n@auth.requires(comment_moderator or collection_admin or admin)\ndef comments_manage():\n    subset = request.vars[\'show\']\n    response.metatitle += " - Comment Moderation"\n    response.title = "Comment"\n    response.subtitle = "Moderation"\n    # All logic is built into the modules, within the comments.py controller\n    return dict(subset=subset)\n\n@auth.requires(collection_admin or admin)\ndef tours_manage():\n    form = SQLFORM.smartgrid(db.t_tour,links_in_grid=False)\n    return dict(form=form)\n\n@auth.requires(admin)\ndef users_manage():\n    response.metatitle += " - User Management"\n    response.title = "User"\n    response.subtitle = "Management"\n    form = SQLFORM.smartgrid(db.auth_user,links_in_grid=False,\n        fields=(db.auth_user.first_name,db.auth_user.last_name,db.auth_user.email))\n    return dict(form=form)\n\n@auth.requires(admin)\ndef roles_manage():\n    response.metatitle += " - Role Management"\n    response.title = "Role"\n    response.subtitle = "Management"\n    form = SQLFORM.smartgrid(db.auth_membership,links_in_grid=False,\n        fields=(db.auth_membership.user_id,db.auth_membership.group_id))\n    return dict(form=form)\n\ndef qrret():\n    response.metatitle += " - QR Code Printing"\n    response.title = "QR Code"\n    response.subtitle = "Printing"\n    rows = db().select(db.geo_item.f_name,db.geo_item.f_qrcode, orderby=db.geo_item.f_name)\n    rows2 = db().select(db.geo_collection.f_name, db.geo_collection.f_qrcode, orderby=db.geo_collection.f_name)\n    items=[]\n    colls=[]\n    sizes = [\n        OPTION("All labels with have equal width and height", _disabled=True),\n        OPTION("0.5 inch", _value=0.5),OPTION("0.75 inch", _value=0.75),\n        OPTION("1 inch", _value=1.0),OPTION("1.5 inch", _value=1.5, _selected=True),\n        OPTION("2 inch", _value=2.0),OPTION("2.5 inch", _value=2.5),\n        OPTION("3 inch", _value=3.0),OPTION("3.5 inch", _value=3.5),\n        OPTION("4 inch", _value=4.0),OPTION("4.5 inch", _value=4.5),\n        OPTION("5 inch", _value=5.0)\n    ]\n    for row in rows:\n        items += [\n        OPTION(row.f_name, _value=row.f_qrcode)\n        ]\n    for row in rows2:\n        colls += [\n        OPTION(row.f_name, _value=row.f_qrcode)\n        ]\n    fields = [DIV(H4("Size per code:"), SELECT(sizes, _name="retsizes"), _class="span12"),\n        DIV(H4("Items"), SELECT(items, _name="retitems", _multiple=True, _size=10), _class="span6"),\n        DIV(H4("Collections"), SELECT(colls, _name="retcolls", _multiple=True, _size=10), _class="span6"), BR(),\n        DIV(INPUT(_type=\'submit\', _value="Get QR Codes"), _style="margin-top: 20px", _class="span12")]\n    form=FORM(fields)\n    if form.process(onvalidation=qrparse).accepted:\n        response.flash = \'Generated pages below\'\n    return dict(form=form)\n\n##################################\n##### Onvalidation functions #####\n##################################\n\n# Imports for all functions are here\nimport uuid\nfrom PIL import Image\nimport qrcode\n\n# Oncreate function from the item_manage view\ndef item_create(form):\n    record = db(db.geo_item.f_name == request.vars.f_name).select().first()\n    if record.f_qrcode == None:\n        arg = str(record.id)\n        path = \'http://siri.pythonanywhere.com/mqr/default/item_details?itemId=\' + arg + \'&qr=True\'\n        code = qrcode.make(path)\n        qrName=\'geo_item.f_qrcode.%s.jpg\' % (uuid.uuid4())\n        code.save(request.folder + \'uploads/qrcodes/\' + qrName, \'JPEG\')\n        record.update_record(f_qrcode=qrName)\n    if record.f_image != form.vars.f_image:\n        try:\n            image = Image.open(request.folder + \'uploads/\' + form.vars.f_image)\n            image.thumbnail((150, 150), Image.ANTIALIAS)\n            imgName=\'geo_item.f_thumb.%s.jpg\' % (uuid.uuid4())\n            image.save(request.folder + \'uploads/thumbs/\' + imgName, \'JPEG\')\n            record.update_record(f_thumb=imgName)\n        except:\n            pass\n    return dict()\n\n# Oncreate function from the collection_manage view\ndef coll_create(form):\n    record = db(db.geo_collection.f_name == request.vars.f_name).select().first()\n    arg = str(record.id)\n    path = \'http://siri.pythonanywhere.com/mqr/default/collection_details?collectionId=\' + arg + \'&qr=True\'\n    code = qrcode.make(path)\n    qrName=\'geo_collection.f_qrcode.%s.jpg\' % (uuid.uuid4())\n    code.save(request.folder + \'uploads/qrcodes/\' + qrName, \'JPEG\')\n    record.update_record(f_qrcode=qrName)\n    return dict()\n\n# Oncreate function from the exhibit_manage view\ndef exhi_create(form):\n    record = db(db.geo_exhibit.f_name == request.vars.f_name).select().first()\n    arg = str(record.id)\n    path = \'http://siri.pythonanywhere.com/mqr/default/exhibit_details?exhibitId=\' + arg + \'&qr=True\'\n    code = qrcode.make(path)\n    qrName=\'geo_exhibit.f_qrcode.%s.jpg\' % (uuid.uuid4())\n    code.save(request.folder + \'uploads/qrcodes/\' + qrName, \'JPEG\')\n    record.update_record(f_qrcode=qrName)\n\n# Onvalidation function for the qrret* view\ndef qrparse(form):\n    codes = []\n    codes += form.vars.retitems\n    codes += form.vars.retcolls\n    size = form.vars.retsizes\n    session.qr = qrmake(codes, size)\n\n\n# This function accepts an array of filenames and programatically opens the images and pastes them\n# onto blank images. The images are returned as an array\ndef qrmake(codes, size_in):\n    images = []\n    dpi = 150 # Dots Per Inch\n    background = Image.new(\'RGBA\', (int(8.5 * dpi), int(11 * dpi)), (255, 255, 255, 255))\n    margin = dpi\n    bg_w,bg_h=background.size\n    offset_left = margin\n    offset_down = margin\n    rowend = bg_w - margin\n    pageend = bg_h - margin\n    size = int(float(size_in) * dpi)\n    dimen = (size,size)\n    for i in xrange(len(codes)):\n        code = codes[i]\n\n        # Tries to open the image and continues to the next iteration if it fails\n        try:\n            img = Image.open(request.folder + \'uploads/\' + code)\n        except:\n            continue\n        img_w,img_h=img.size\n        if img_w > size:\n            img.thumbnail(dimen, Image.ANTIALIAS)\n        else:\n            img = img.resize(dimen)\n        img_w,img_h=img.size\n\n        pasted = False\n        while pasted == False:\n\n            # Check to see if the image will be too wide to fit on the page\n            if offset_left + img_w > rowend:\n                offset_down += img_h\n                offset_left = margin\n\n            # Check to see if the page has ended and if so, recursively calls the function then returns\n            elif offset_down + img_h > pageend:\n                qrName=\'qrpage.%s.jpeg\' % (uuid.uuid4())\n                background.save(request.folder + \'static/temp/\' + qrName, \'JPEG\')\n                images += [qrName]\n                images += qrmake(codes[i:],size_in)\n                return images\n\n            # When the image fits, it is pasted here\n            else:\n                background.paste(img,(offset_left,offset_down))\n                offset_left += img_w\n                pasted = True\n\n    # Adds the single image to the array and returns when no recursion occured\n    qrName="qrpage.%s.jpeg" % (uuid.uuid4())\n    background.save(request.folder + \'static/temp/\' + qrName, \'JPEG\')\n    images += [qrName]\n    return images\nresponse._vars=response._caller(items_manage)\n'
+p7
+sS'snapshot'
+p8
+(dp9
+S'exception'
+p10
+(dp11
+S'__module__'
+p12
+S"'sqlite3'"
+p13
+sS'__getslice__'
+p14
+S"<method-wrapper '__getslice__' of IntegrityError object>"
+p15
+sS'__str__'
+p16
+S"<method-wrapper '__str__' of IntegrityError object>"
+p17
+sS'__reduce__'
+p18
+S'<built-in method __reduce__ of IntegrityError object>'
+p19
+sS'__dict__'
+p20
+S'{}'
+p21
+sS'__sizeof__'
+p22
+S'<built-in method __sizeof__ of IntegrityError object>'
+p23
+sS'__weakref__'
+p24
+S'None'
+p25
+sS'__init__'
+p26
+S"<method-wrapper '__init__' of IntegrityError object>"
+p27
+sS'__setattr__'
+p28
+S"<method-wrapper '__setattr__' of IntegrityError object>"
+p29
+sS'__reduce_ex__'
+p30
+S'<built-in method __reduce_ex__ of IntegrityError object>'
+p31
+sS'__new__'
+p32
+S'<built-in method __new__ of type object>'
+p33
+sS'__format__'
+p34
+S'<built-in method __format__ of IntegrityError object>'
+p35
+sS'__class__'
+p36
+S"<class 'sqlite3.IntegrityError'>"
+p37
+sS'__doc__'
+p38
+S'None'
+p39
+sS'__getitem__'
+p40
+S"<method-wrapper '__getitem__' of IntegrityError object>"
+p41
+sS'__setstate__'
+p42
+S'<built-in method __setstate__ of IntegrityError object>'
+p43
+sS'__getattribute__'
+p44
+S"<method-wrapper '__getattribute__' of IntegrityError object>"
+p45
+sS'args'
+p46
+S"('foreign key constraint failed',)"
+p47
+sS'__subclasshook__'
+p48
+S'<built-in method __subclasshook__ of type object>'
+p49
+sS'__unicode__'
+p50
+S'<built-in method __unicode__ of IntegrityError object>'
+p51
+sS'__delattr__'
+p52
+S"<method-wrapper '__delattr__' of IntegrityError object>"
+p53
+sS'__repr__'
+p54
+S"<method-wrapper '__repr__' of IntegrityError object>"
+p55
+sS'__hash__'
+p56
+S"<method-wrapper '__hash__' of IntegrityError object>"
+p57
+ssS'evalue'
+p58
+S'foreign key constraint failed'
+p59
+sS'request'
+p60
+cgluon.html
+XML_unpickle
+p61
+(S's\xe3V\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">ajax</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">application</td><td style="vertical-align:top;">:</td><td><div>byui_art</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">args</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>geo_item</div></td></tr><tr><td><div>new</div></td></tr><tr><td><div>geo_item</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cid</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">client</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">controller</td><td style="vertical-align:top;">:</td><td><div>cms</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_byui_art</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">sessionid</td><td style="vertical-align:top;">:</td><td><div>058e3ba1a87a26f4bbcc4a36f8e02c6b<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">env</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">CONTENT_LENGTH</td><td style="vertical-align:top;">:</td><td><div>1318812</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">CONTENT_TYPE</td><td style="vertical-align:top;">:</td><td><div>multipart/form-data; boundary=----WebKitFormBoundaryZW5rZX94DnforyAA</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">DOCUMENT_ROOT</td><td style="vertical-align:top;">:</td><td><div>/usr/local/openresty/nginx/html</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_ENCODING</td><td style="vertical-align:top;">:</td><td><div>gzip,deflate</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_LANGUAGE</td><td style="vertical-align:top;">:</td><td><div>en-US,en;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CACHE_CONTROL</td><td style="vertical-align:top;">:</td><td><div>max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONNECTION</td><td style="vertical-align:top;">:</td><td><div>close</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONTENT_LENGTH</td><td style="vertical-align:top;">:</td><td><div>1318812</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONTENT_TYPE</td><td style="vertical-align:top;">:</td><td><div>multipart/form-data; boundary=----WebKitFormBoundaryZW5rZX94DnforyAA</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_COOKIE</td><td style="vertical-align:top;">:</td><td><div>sessionid=058e3ba1a87a26f4bbcc4a36f8e02c6b; session_id_byui_art=157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_HOST</td><td style="vertical-align:top;">:</td><td><div>siri.pythonanywhere.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ORIGIN</td><td style="vertical-align:top;">:</td><td><div>http://siri.pythonanywhere.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_REFERER</td><td style="vertical-align:top;">:</td><td><div>http://siri.pythonanywhere.com/byui_art/cms/items_manage/geo_item/new/geo_item?_signature=30bd33b869a48cf3b39e90e6fd16e41a45b66013</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_USER_AGENT</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_X_FORWARDED_FOR</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_X_REAL_IP</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">PATH_INFO</td><td style="vertical-align:top;">:</td><td><div>/byui_art/cms/items_manage/geo_item/new/geo_item</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">QUERY_STRING</td><td style="vertical-align:top;">:</td><td><div>_signature=30bd33b869a48cf3b39e90e6fd16e41a45b66013</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_ADDR</td><td style="vertical-align:top;">:</td><td><div>10.138.64.83</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_PORT</td><td style="vertical-align:top;">:</td><td><div>35384</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REQUEST_METHOD</td><td style="vertical-align:top;">:</td><td><div>POST</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REQUEST_URI</td><td style="vertical-align:top;">:</td><td><div>/byui_art/cms/items_manage/geo_item/new/geo_item?_signature=30bd33b869a48cf3b39e90e6fd16e41a45b66013</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SCRIPT_NAME</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_NAME</td><td style="vertical-align:top;">:</td><td><div>siri.pythonanywhere.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PORT</td><td style="vertical-align:top;">:</td><td><div>80</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PROTOCOL</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;/home/SIRI/web2py/applications/byui_art/&#x27;, &#x27;/home/SIRI/web2py/applications/admin/&#x27;, &#x27;/home/SIRI/web2py/applications/welcome/&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">content_length</td><td style="vertical-align:top;">:</td><td><div>1318812</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">content_type</td><td style="vertical-align:top;">:</td><td><div>multipart/form-data; boundary=----WebKitFormBoundaryZW5rZX94DnforyAA</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">document_root</td><td style="vertical-align:top;">:</td><td><div>/usr/local/openresty/nginx/html</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_encoding</td><td style="vertical-align:top;">:</td><td><div>gzip,deflate</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_language</td><td style="vertical-align:top;">:</td><td><div>en-US,en;q=0.8</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cache_control</td><td style="vertical-align:top;">:</td><td><div>max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_connection</td><td style="vertical-align:top;">:</td><td><div>close</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_content_length</td><td style="vertical-align:top;">:</td><td><div>1318812</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_content_type</td><td style="vertical-align:top;">:</td><td><div>multipart/form-data; boundary=----WebKitFormBoundaryZW5rZX94DnforyAA</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cookie</td><td style="vertical-align:top;">:</td><td><div>sessionid=058e3ba1a87a26f4bbcc4a36f8e02c6b; session_id_byui_art=157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_host</td><td style="vertical-align:top;">:</td><td><div>siri.pythonanywhere.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_origin</td><td style="vertical-align:top;">:</td><td><div>http://siri.pythonanywhere.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_referer</td><td style="vertical-align:top;">:</td><td><div>http://siri.pythonanywhere.com/byui_art/cms/items_manage/geo_item/new/geo_item?_signature=30bd33b869a48cf3b39e90e6fd16e41a45b66013</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_user_agent</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_x_forwarded_for</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_x_real_ip</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>giles-liveweb1</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>50.19.109.98</div></td></tr><tr><td><div>localhost</div></td></tr><tr><td><div>siri.pythonanywhere.com</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path_info</td><td style="vertical-align:top;">:</td><td><div>/byui_art/cms/items_manage/geo_item/new/geo_item</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">query_string</td><td style="vertical-align:top;">:</td><td><div>_signature=30bd33b869a48cf3b39e90e6fd16e41a45b66013</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_addr</td><td style="vertical-align:top;">:</td><td><div>10.138.64.83</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_port</td><td style="vertical-align:top;">:</td><td><div>35384</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_method</td><td style="vertical-align:top;">:</td><td><div>POST</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_uri</td><td style="vertical-align:top;">:</td><td><div>/byui_art/cms/items_manage/geo_item/new/geo_item?_signature=30bd33b869a48cf3b39e90e6fd16e41a45b66013</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">script_name</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_name</td><td style="vertical-align:top;">:</td><td><div>siri.pythonanywhere.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_port</td><td style="vertical-align:top;">:</td><td><div>80</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_protocol</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uwsgi.node</td><td style="vertical-align:top;">:</td><td><div>giles-liveweb1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uwsgi.version</td><td style="vertical-align:top;">:</td><td><div>2.0.5.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uwsgi_node</td><td style="vertical-align:top;">:</td><td><div>giles-liveweb1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uwsgi_version</td><td style="vertical-align:top;">:</td><td><div>2.0.5.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_path</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.8.2-stable+timestamp.2013.11.28.13.54.07</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.errors</td><td style="vertical-align:top;">:</td><td><div>&lt;uwsgi_file__bin_user_wsgi_wrapper.ErrorLogFile object at 0x36c1550&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;built-in function uwsgi_sendfile&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.input</td><td style="vertical-align:top;">:</td><td><div>&lt;uwsgi._Input object at 0x7fdec627e9a8&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multiprocess</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multithread</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_errors</td><td style="vertical-align:top;">:</td><td><div>&lt;uwsgi_file__bin_user_wsgi_wrapper.ErrorLogFile object at 0x36c1550&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;built-in function uwsgi_sendfile&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_input</td><td style="vertical-align:top;">:</td><td><div>&lt;uwsgi._Input object at 0x7fdec627e9a8&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multiprocess</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multithread</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">extension</td><td style="vertical-align:top;">:</td><td><div>html</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">folder</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py/applications/byui_art/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">function</td><td style="vertical-align:top;">:</td><td><div>items_manage</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">global_settings</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;/home/SIRI/web2py/applications/byui_art/&#x27;, &#x27;/home/SIRI/web2py/applications/admin/&#x27;, &#x27;/home/SIRI/web2py/applications/welcome/&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>giles-liveweb1</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>50.19.109.98</div></td></tr><tr><td><div>localhost</div></td></tr><tr><td><div>siri.pythonanywhere.com</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.8.2-stable+timestamp.2013.11.28.13.54.07</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_https</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_local</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_restful</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">now</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2014, 9, 23, 17, 38, 22, 597746)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_args</td><td style="vertical-align:top;">:</td><td><div>geo_item/new/geo_item</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_extension</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">url</td><td style="vertical-align:top;">:</td><td><div>/byui_art/cms/items_manage/geo_item/new/geo_item</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">utcnow</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2014, 9, 23, 17, 38, 22, 597770)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uuid</td><td style="vertical-align:top;">:</td><td><div>byui_art/157.201.101.164.2014-09-23.17-38-22.deed9628-37e4-4108-bcea-90e801ed1dd6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi</td><td style="vertical-align:top;">:</td><td><div>&lt;gluon.main.LazyWSGI object at 0x4ffc910&gt;</div></td></tr></table></div>'
+tRp62
+sS'frames'
+p63
+(lp64
+(dp65
+S'file'
+p66
+S'/home/SIRI/web2py/gluon/restricted.py'
+p67
+sS'dump'
+p68
+(dp69
+S'environment'
+p70
+S"{'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, 'CAT': <class 'gluon.html.CAT'>, 'CENTER': <class 'gluon.html.CENTER'>, ...}"
+p71
+sS'ccode'
+p72
+S'<code object <module> at 0x4de1030, file "/home/...pplications/byui_art/controllers/cms.py", line 5>'
+p73
+ssS'lnum'
+p74
+I217
+sS'lines'
+p75
+(dp76
+I212
+S'    try:'
+p77
+sI213
+S'        if isinstance(code, types.CodeType):'
+p78
+sI214
+S'            ccode = code'
+p79
+sI215
+S'        else:'
+p80
+sI216
+S'            ccode = compile2(code, layer)'
+p81
+sI217
+S'        exec ccode in environment'
+p82
+sI218
+S'    except HTTP:'
+p83
+sI219
+S'        raise'
+p84
+sI220
+S'    except RestrictedError:'
+p85
+sI221
+S'        # do not encapsulate (obfuscate) the original RestrictedError'
+p86
+ssS'call'
+p87
+S"(code='# coding: utf8\\n# TODO: Determine group architect...es\\nresponse._vars=response._caller(items_manage)\\n', environment={'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, 'CAT': <class 'gluon.html.CAT'>, 'CENTER': <class 'gluon.html.CENTER'>, ...}, layer='/home/SIRI/web2py/applications/byui_art/controllers/cms.py')"
+p88
+sS'func'
+p89
+S'restricted'
+p90
+sa(dp91
+g66
+S'/home/SIRI/web2py/applications/byui_art/controllers/cms.py'
+p92
+sg68
+(dp93
+sg74
+I230
+sg75
+(dp94
+I224
+S''
+sI225
+S'    # Adds the single image to the array and returns when no recursion occured'
+p95
+sI226
+S'    qrName="qrpage.%s.jpeg" % (uuid.uuid4())'
+p96
+sI227
+S"    background.save(request.folder + 'static/temp/' + qrName, 'JPEG')"
+p97
+sI228
+S'    images += [qrName]'
+p98
+sI229
+S'    return images'
+p99
+sI220
+S'            else:'
+p100
+sI221
+S'                background.paste(img,(offset_left,offset_down))'
+p101
+sI222
+S'                offset_left += img_w'
+p102
+sI223
+S'                pasted = True'
+p103
+ssg87
+S'()'
+p104
+sg89
+S'<module>'
+p105
+sa(dp106
+g66
+S'/home/SIRI/web2py/gluon/globals.py'
+p107
+sg68
+(dp108
+S'self'
+p109
+S'undefined'
+p110
+sS'f'
+S'<function items_manage>'
+p111
+ssg74
+I372
+sg75
+(dp112
+I367
+S'        self.menu = []             # used by the default view layout'
+p113
+sI368
+S'        self.files = []            # used by web2py_ajax.html'
+p114
+sI369
+S'        self.generic_patterns = []  # patterns to allow generic views'
+p115
+sI370
+S"        self.delimiters = ('{{', '}}')"
+p116
+sI371
+S'        self._vars = None'
+p117
+sI372
+S'        self._caller = lambda f: f()'
+p118
+sI373
+S'        self._view_environment = None'
+p119
+sI374
+S'        self._custom_commit = None'
+p120
+sI375
+S'        self._custom_rollback = None'
+p121
+sI376
+S''
+ssg87
+S'(f=<function items_manage>)'
+p122
+sg89
+S'<lambda>'
+p123
+sa(dp124
+g66
+S'/home/SIRI/web2py/gluon/tools.py'
+p125
+sg68
+(dp126
+S'action'
+p127
+S'<function items_manage>'
+p128
+sS'a'
+S'()'
+p129
+sS'b'
+g21
+ssg74
+I3239
+sg75
+(dp130
+I3234
+S'                    flag = condition'
+p131
+sI3235
+S'                if not flag:'
+p132
+sI3236
+S'                    current.session.flash = self.messages.access_denied'
+p133
+sI3237
+S'                    return call_or_redirect('
+p134
+sI3238
+S'                        self.settings.on_failed_authorization)'
+p135
+sI3239
+S'                return action(*a, **b)'
+p136
+sI3240
+S'            f.__doc__ = action.__doc__'
+p137
+sI3241
+S'            f.__name__ = action.__name__'
+p138
+sI3242
+S'            f.__dict__.update(action.__dict__)'
+p139
+sI3243
+S'            return f'
+p140
+ssg87
+S'(*a=(), **b={})'
+p141
+sg89
+S'f'
+sa(dp142
+g66
+S'/home/SIRI/web2py/applications/byui_art/controllers/cms.py'
+p143
+sg68
+(dp144
+S'global db'
+p145
+S'<DAL uri="sqlite://storage.sqlite">'
+p146
+sS'db.geo_item'
+p147
+S'<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>'
+p148
+sS'db.geo_item.f_qrcode'
+p149
+S'<gluon.dal.Field object>'
+p150
+ssg74
+I45
+sg75
+(dp151
+I40
+S'            db.geo_item.f_collection_id,'
+p152
+sI41
+S'            db.geo_item.f_description,'
+p153
+sI42
+S'            db.geo_item.f_tagline,'
+p154
+sI43
+S'            db.geo_item.f_featured,'
+p155
+sI44
+S'            db.geo_item.is_active,'
+p156
+sI45
+S'            db.geo_item.f_qrcode))'
+p157
+sI46
+S'    return dict(form=form)'
+p158
+sI47
+S''
+sI48
+S'@auth.requires(comment_moderator or collection_admin or admin)'
+p159
+sI49
+S'def comments_manage():'
+p160
+ssg87
+S'()'
+p161
+sg89
+S'items_manage'
+p162
+sa(dp163
+g66
+S'/home/SIRI/web2py/gluon/sqlhtml.py'
+p164
+sg68
+(dp165
+S'user_signature'
+p166
+S'True'
+p167
+sS'kwargs'
+p168
+S"{'fields': (<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>), 'oncreate': <function item_create>, 'onupdate': <function item_create>}"
+p169
+ssg74
+I2764
+sg75
+(dp170
+I2759
+S'                            A(SPAN(t), cid=request.cid, _href=url('
+p171
+sI2760
+S'                              args=[args0, row[id_field_name]])))'
+p172
+sI2761
+S''
+sI2762
+S'        grid = SQLFORM.grid(query, args=request.args[:nargs], links=links,'
+p173
+sI2763
+S'                            links_in_grid=links_in_grid,'
+p174
+sI2764
+S'                            user_signature=user_signature, **kwargs)'
+p175
+sI2765
+S''
+sI2766
+S'        if isinstance(grid, DIV):'
+p176
+sI2767
+S'            header = table._plural'
+p177
+sI2768
+S'            next = grid.create_form or grid.update_form or grid.view_form'
+p178
+ssg87
+S"(table=<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>, constraints={}, linked_tables=['auth_user', 'auth_group', 'auth_membership', '...m', 't_tour', 't_item_comment', 't_coll_comment'], links=[<function <lambda>>], links_in_grid=False, args=[], user_signature=True, divider='>', breadcrumbs_class='', **kwargs={'fields': (<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>), 'oncreate': <function item_create>, 'onupdate': <function item_create>})"
+p179
+sg89
+S'smartgrid'
+p180
+sa(dp181
+g66
+S'/home/SIRI/web2py/gluon/sqlhtml.py'
+p182
+sg68
+(dp183
+S'oncreate'
+p184
+S'<function item_create>'
+p185
+sS'onsuccess'
+p186
+g110
+ssg74
+I2055
+sg75
+(dp187
+I2050
+S'            create_form = SQLFORM(table, **sqlformargs)'
+p188
+sI2051
+S'            create_form.process(formname=formname,'
+p189
+sI2052
+S'                                next=referrer,'
+p190
+sI2053
+S'                                onvalidation=onvalidation,'
+p191
+sI2054
+S'                                onfailure=onfailure,'
+p192
+sI2055
+S'                                onsuccess=oncreate)'
+p193
+sI2056
+S'            res = DIV(buttons(), create_form, formfooter, _class=_class)'
+p194
+sI2057
+S'            res.create_form = create_form'
+p195
+sI2058
+S'            res.update_form = update_form'
+p196
+sI2059
+S'            res.view_form = view_form'
+p197
+ssg87
+S"(query=<Query (geo_item.id IS NOT NULL)>, fields=(<gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>, <gluon.dal.Field object>), field_id=<gluon.dal.Field object>, left=None, headers={}, orderby=None, groupby=None, searchable=True, sortable=True, paginate=20, deletable=True, editable=True, details=True, selectable=None, create=True, csv=True, links=[<function <lambda>>], links_in_grid=False, upload=<function <lambda>>, args=['geo_item'], user_signature=True, maxtextlengths={}, maxtextlength=20, onvalidation=None, onfailure=None, oncreate=<function item_create>, onupdate=<function item_create>, ondelete=None, sorter_icons=(<gluon.html.XML object>, <gluon.html.XML object>), ui={'button': 'button btn', 'buttonadd': 'icon plus icon-plus', 'buttonback': 'icon leftarrow icon-arrow-left', 'buttondelete': 'icon trash icon-trash', 'buttonedit': 'icon pen icon-pencil', 'buttonexport': 'icon downarrow icon-download', 'buttontable': 'icon rightarrow icon-arrow-right', 'buttontext': 'buttontext button', 'buttonview': 'icon magnifier icon-zoom-in', 'content': '', ...}, showbuttontext=True, _class='web2py_grid', formname='web2py_grid', search_widget='default', ignore_rw=False, formstyle='table3cols', exportclasses=None, formargs={}, createargs={}, editargs={}, viewargs={}, selectable_submit_button='Submit', buttons_placement='right', links_placement='right', noconfirm=False, cache_count=None, client_side_delete=False, ignore_common_filters=None)"
+p198
+sg89
+S'grid'
+p199
+sa(dp200
+g66
+S'/home/SIRI/web2py/gluon/html.py'
+p201
+sg68
+(dp202
+S'self'
+p203
+S'<gluon.sqlhtml.SQLFORM object>'
+p204
+sS'self.validate'
+p205
+S'<bound method SQLFORM.validate of <gluon.sqlhtml.SQLFORM object>>'
+p206
+sS'kwargs'
+p207
+S"{'dbio': True, 'formname': 'web2py_grid', 'next': '/byui_art/cms/items_manage/geo_item?_signature=63f54b4d9a6d3727d6cdc14e51342a22f793260d', 'onfailure': None, 'onsuccess': <function item_create>, 'onvalidation': None}"
+p208
+ssg74
+I2215
+sg75
+(dp209
+I2210
+S'        def action():'
+p210
+sI2211
+S'            return dict(form=SQLFORM(db.table).process(onsuccess=my_callback)'
+p211
+sI2212
+S'        """'
+p212
+sI2213
+S"        kwargs['dbio'] = kwargs.get('dbio', True)"
+p213
+sI2214
+S'                                    # necessary for SQLHTML forms'
+p214
+sI2215
+S'        self.validate(**kwargs)'
+p215
+sI2216
+S'        return self'
+p216
+sI2217
+S''
+sI2218
+S'    REDIRECT_JS = "window.location=\'%s\';return false"'
+p217
+sI2219
+S''
+ssg87
+S"(self=<gluon.sqlhtml.SQLFORM object>, **kwargs={'dbio': True, 'formname': 'web2py_grid', 'next': '/byui_art/cms/items_manage/geo_item?_signature=63f54b4d9a6d3727d6cdc14e51342a22f793260d', 'onfailure': None, 'onsuccess': <function item_create>, 'onvalidation': None})"
+p218
+sg89
+S'process'
+p219
+sa(dp220
+g66
+S'/home/SIRI/web2py/gluon/html.py'
+p221
+sg68
+(dp222
+S'self'
+p223
+S'<gluon.sqlhtml.SQLFORM object>'
+p224
+sS'self.accepts'
+p225
+S'<bound method SQLFORM.accepts of <gluon.sqlhtml.SQLFORM object>>'
+p226
+sS'kwargs'
+p227
+S"{'dbio': True, 'formname': 'web2py_grid', 'onvalidation': None, 'request_vars': <Storage {'f_alt6': '', 'f_alt3': '', 'f_alt5': ...'f_extImg2': '', 'f_alt2': '', 'f_youtube1': ''}>, 'session': <Storage {'qr': ['qrpage.c8c0f9a6-4937-4e2e-b10a...3824a', '5d352da9-08c2-4f8b-a559-549035815636']}>}"
+p228
+ssg74
+I2154
+sg75
+(dp229
+I2149
+S"        for key in ('message_onsuccess', 'message_onfailure', 'onsuccess',"
+p230
+sI2150
+S"                    'onfailure', 'next', 'message_onchange', 'onchange'):"
+p231
+sI2151
+S'            if key in kwargs:'
+p232
+sI2152
+S'                del kwargs[key]'
+p233
+sI2153
+S''
+sI2154
+S'        if self.accepts(**kwargs):'
+p234
+sI2155
+S"            if onsuccess == 'flash':"
+p235
+sI2156
+S'                if next:'
+p236
+sI2157
+S'                    current.session.flash = message_onsuccess'
+p237
+sI2158
+S'                else:'
+p238
+ssg87
+S"(self=<gluon.sqlhtml.SQLFORM object>, **kwargs={'dbio': True, 'formname': 'web2py_grid', 'onvalidation': None, 'request_vars': <Storage {'f_alt6': '', 'f_alt3': '', 'f_alt5': ...'f_extImg2': '', 'f_alt2': '', 'f_youtube1': ''}>, 'session': <Storage {'qr': ['qrpage.c8c0f9a6-4937-4e2e-b10a...3824a', '5d352da9-08c2-4f8b-a559-549035815636']}>})"
+p239
+sg89
+S'validate'
+p240
+sa(dp241
+g66
+S'/home/SIRI/web2py/gluon/sqlhtml.py'
+p242
+sg68
+(dp243
+S'self.vars.id'
+p244
+S'None'
+p245
+sS'fields'
+p246
+S"{'created_by': <function lazy_user>, 'created_on': datetime.datetime(2014, 9, 23, 17, 38, 22, 597746), 'f_alt1': '', 'f_alt2': '', 'f_alt3': '', 'f_alt4': '', 'f_alt5': '', 'f_alt6': '', 'f_alt7': '', 'f_collection_id': 9, ...}"
+p247
+sS'self'
+p248
+S'<gluon.sqlhtml.SQLFORM object>'
+p249
+sS'self.vars'
+p250
+S"<Storage {'f_description': 'Oil painting', 'f_im...': '', 'f_alt1': '', 'f_alt2': '', 'f_alt3': ''}>"
+p251
+sS'self.table.insert'
+p252
+S'<bound method Table.insert of <Table geo_item (i...,created_on,created_by,modified_on,modified_by)>>'
+p253
+sS'self.table'
+p254
+S'<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>'
+p255
+ssg74
+I1574
+sg75
+(dp256
+I1569
+S'                    self.vars.id = self.record[self.id_field_name]'
+p257
+sI1570
+S'                    if fields:'
+p258
+sI1571
+S'                        self.table._db(self.table._id == self.record['
+p259
+sI1572
+S'                                       self.id_field_name]).update(**fields)'
+p260
+sI1573
+S'                else:'
+p261
+sI1574
+S'                    self.vars.id = self.table.insert(**fields)'
+p262
+sI1575
+S'        self.accepted = ret'
+p263
+sI1576
+S'        return ret'
+p264
+sI1577
+S''
+sI1578
+S'    AUTOTYPES = {'
+p265
+ssg87
+S"(self=<gluon.sqlhtml.SQLFORM object>, request_vars=<Storage {'f_alt6': '', 'f_alt3': '', 'f_alt5': ...'f_extImg2': '', 'f_alt2': '', 'f_youtube1': ''}>, session=<Storage {'qr': ['qrpage.c8c0f9a6-4937-4e2e-b10a...3824a', '5d352da9-08c2-4f8b-a559-549035815636']}>, formname='web2py_grid', keepvalues=False, onvalidation=None, dbio=True, hideerror=False, detect_record_change=False, **kwargs={})"
+p266
+sg89
+S'accepts'
+p267
+sa(dp268
+g66
+S'/home/SIRI/web2py/gluon/dal.py'
+p269
+sg68
+(dp270
+S'self._listify'
+p271
+S'<bound method Table._listify of <Table geo_item ...,created_on,created_by,modified_on,modified_by)>>'
+p272
+sS'fields'
+p273
+S"{'created_by': <function lazy_user>, 'created_on': datetime.datetime(2014, 9, 23, 17, 38, 22, 597746), 'f_alt1': '', 'f_alt2': '', 'f_alt3': '', 'f_alt4': '', 'f_alt5': '', 'f_alt6': '', 'f_alt7': '', 'f_collection_id': 9, ...}"
+p274
+sS'self'
+p275
+S'<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>'
+p276
+sS'ret'
+p277
+g110
+sS'self._db._adapter'
+p278
+S'<gluon.dal.SQLiteAdapter object>'
+p279
+sS'self._db._adapter.insert'
+p280
+S'<bound method SQLiteAdapter.insert of <gluon.dal.SQLiteAdapter object>>'
+p281
+sS'self._db'
+p282
+S'<DAL uri="sqlite://storage.sqlite">'
+p283
+ssg74
+I9003
+sg75
+(dp284
+I8998
+S''
+sI8999
+S'    def insert(self, **fields):'
+p285
+sI9000
+S'        fields = self._defaults(fields)'
+p286
+sI9001
+S'        self._attempt_upload(fields)'
+p287
+sI9002
+S'        if any(f(fields) for f in self._before_insert): return 0'
+p288
+sI9003
+S'        ret =  self._db._adapter.insert(self, self._listify(fields))'
+p289
+sI9004
+S'        if ret and self._after_insert:'
+p290
+sI9005
+S'            fields = Row(fields)'
+p291
+sI9006
+S'            [f(fields,ret) for f in self._after_insert]'
+p292
+sI9007
+S'        return ret'
+p293
+ssg87
+S"(self=<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>, **fields={'created_by': <function lazy_user>, 'created_on': datetime.datetime(2014, 9, 23, 17, 38, 22, 597746), 'f_alt1': '', 'f_alt2': '', 'f_alt3': '', 'f_alt4': '', 'f_alt5': '', 'f_alt6': '', 'f_alt7': '', 'f_collection_id': 9, ...})"
+p294
+sg89
+S'insert'
+p295
+sa(dp296
+g66
+S'/home/SIRI/web2py/gluon/dal.py'
+p297
+sg68
+(dp298
+S'e'
+S"IntegrityError('foreign key constraint failed',)"
+p299
+ssg74
+I1311
+sg75
+(dp300
+I1312
+S"        if hasattr(table,'_primarykey'):"
+p301
+sI1313
+S'            return dict([(k[0].name, k[1]) for k in fields \\'
+p302
+sI1314
+S'                             if k[0].name in table._primarykey])'
+p303
+sI1315
+S'        id = self.lastrowid(table)'
+p304
+sI1306
+S'            self.execute(query)'
+p305
+sI1307
+S'        except Exception:'
+p306
+sI1308
+S'            e = sys.exc_info()[1]'
+p307
+sI1309
+S"            if hasattr(table,'_on_insert_error'):"
+p308
+sI1310
+S'                return table._on_insert_error(table,fields,e)'
+p309
+sI1311
+S'            raise e'
+p310
+ssg87
+S"(self=<gluon.dal.SQLiteAdapter object>, table=<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>, fields=[(<gluon.dal.Field object>, datetime.datetime(2014, 9, 23, 17, 38, 22, 597746)), (<gluon.dal.Field object>, 'Oil painting'), (<gluon.dal.Field object>, <function lazy_user>), (<gluon.dal.Field object>, <function lazy_user>), (<gluon.dal.Field object>, False), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, 9), (<gluon.dal.Field object>, 'Example'), (<gluon.dal.Field object>, True), (<gluon.dal.Field object>, datetime.datetime(2014, 9, 23, 17, 38, 22, 597746)), (<gluon.dal.Field object>, None), (<gluon.dal.Field object>, None), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, 'geo_item.f_image.9d5d539ee06dee69.494d475f303735302e6a7067.jpg'), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), ...])"
+p311
+sg89
+g295
+sasS'pyver'
+p312
+S'Python 2.7.5+: /usr/local/bin/uwsgi (prefix: /usr)'
+p313
+sS'session'
+p314
+g61
+(S's\xcb\t\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">auth</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">expiration</td><td style="vertical-align:top;">:</td><td><div>3600</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">hmac_key</td><td style="vertical-align:top;">:</td><td><div>00344589-a3eb-47c0-8804-3435ccf5bc92</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_visit</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2014, 9, 23, 17, 38, 22, 597746)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remember</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">user</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">email</td><td style="vertical-align:top;">:</td><td><div>tav11001@byui.edu</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">first_name</td><td style="vertical-align:top;">:</td><td><div>Krystal</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">id</td><td style="vertical-align:top;">:</td><td><div>15L</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_name</td><td style="vertical-align:top;">:</td><td><div>Tavoian</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">registration_id</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">registration_key</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">reset_password_key</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">user_groups</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">2</td><td style="vertical-align:top;">:</td><td><div>collection_admin</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">qr</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>qrpage.c8c0f9a6-4937-4e2e-b10a-c0aa3a5c10fa.jpeg</div></td></tr></table></div></td></tr></table></div>'
+tRp315
+sS'etype'
+p316
+S"<class 'sqlite3.IntegrityError'>"
+p317
+sS'date'
+p318
+S'Tue Sep 23 17:38:23 2014'
+p319
+sS'response'
+p320
+g61
+(S's\xa1 \x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">body</td><td style="vertical-align:top;">:</td><td><div>&lt;cStringIO.StringO object at 0x41fb928&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_byui_art</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div>/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">delimiters</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>{{</div></td></tr><tr><td><div>}}</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">files</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generic_patterns</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">headers</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">X-Powered-By</td><td style="vertical-align:top;">:</td><td><div>web2py</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">menu</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div><table><tr><td><div>Home</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/byui_art/default/index</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Collections</div></td></tr><tr><td><div>/byui_art/cms/items_manage</div></td></tr><tr><td><div>/byui_art/cms/items_manage</div></td></tr><tr><td><div><table><tr><td><div><table><tr><td><div>Main Display</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/byui_art/default/collection_details?collectionId=9</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Manage</div></td></tr><tr><td><div>/byui_art/cms/items_manage</div></td></tr><tr><td><div>/byui_art/cms/items_manage</div></td></tr><tr><td><div><table><tr><td><div><table><tr><td><div>Comments</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/byui_art/cms/comments_manage</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Items</div></td></tr><tr><td><div>True</div></td></tr><tr><td><div>/byui_art/cms/items_manage</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>QR Retrieval</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/byui_art/cms/qrret</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">meta</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">author</td><td style="vertical-align:top;">:</td><td><div>Evan Caldwell &lt;e.caldwell@sirinstitute.org&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">description</td><td style="vertical-align:top;">:</td><td><div>This is a platform to allow access to rich content for museums, galleries and universities via a simple QR code setup.</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">keywords</td><td style="vertical-align:top;">:</td><td><div>qr, museum, gallery, university</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">metatitle</td><td style="vertical-align:top;">:</td><td><div>Geology Musuem - Item Management</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">models_to_run</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>^\\w+\\.py$</div></td></tr><tr><td><div>^cms/\\w+\\.py$</div></td></tr><tr><td><div>^cms/items_manage/\\w+\\.py$</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">postprocessing</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_client</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_compression_level</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_expires</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_key</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_data_name</td><td style="vertical-align:top;">:</td><td><div>session_data_byui_art</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_file</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;/home/SIRI/web2py/applications/byui_art/sessions/157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6&#x27;, mode &#x27;rb+&#x27; at 0x485fd20&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_filename</td><td style="vertical-align:top;">:</td><td><div>/home/SIRI/web2py/applications/byui_art/sessions/157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_hash</td><td style="vertical-align:top;">:</td><td><div>920947abc968bae2fce5812d4fc2a8b6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id</td><td style="vertical-align:top;">:</td><td><div>157.201.101.164-4c86bfc3-abca-4ab0-988c-9220087d7ea6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_name</td><td style="vertical-align:top;">:</td><td><div>session_id_byui_art</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_locked</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_masterapp</td><td style="vertical-align:top;">:</td><td><div>byui_art</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_new</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_storage_type</td><td style="vertical-align:top;">:</td><td><div>file</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">status</td><td style="vertical-align:top;">:</td><td><div>200</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">subtitle</td><td style="vertical-align:top;">:</td><td><div>Management</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">title</td><td style="vertical-align:top;">:</td><td><div>Item</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">view</td><td style="vertical-align:top;">:</td><td><div>cms/items_manage.html</div></td></tr></table></div>'
+tRp321
+sS'locals'
+p322
+(dp323
+S'query'
+p324
+S'"INSERT INTO geo_item(created_on,f_description,cr...5f303735302e6a7067.jpg\',\'\',\'\',\'\',\'\',\'\',\'\',\'\',\'\');"'
+p325
+sS'self'
+p326
+S'<gluon.dal.SQLiteAdapter object>'
+p327
+sS'e'
+S"IntegrityError('foreign key constraint failed',)"
+p328
+sS'fields'
+p329
+S"[(<gluon.dal.Field object>, datetime.datetime(2014, 9, 23, 17, 38, 22, 597746)), (<gluon.dal.Field object>, 'Oil painting'), (<gluon.dal.Field object>, <function lazy_user>), (<gluon.dal.Field object>, <function lazy_user>), (<gluon.dal.Field object>, False), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, 9), (<gluon.dal.Field object>, 'Example'), (<gluon.dal.Field object>, True), (<gluon.dal.Field object>, datetime.datetime(2014, 9, 23, 17, 38, 22, 597746)), (<gluon.dal.Field object>, None), (<gluon.dal.Field object>, None), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, 'geo_item.f_image.9d5d539ee06dee69.494d475f303735302e6a7067.jpg'), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), (<gluon.dal.Field object>, ''), ...]"
+p330
+sS'table'
+p331
+S'<Table geo_item (id,f_name,f_collection_id,f_des...e,created_on,created_by,modified_on,modified_by)>'
+p332
+sssS'traceback'
+p333
+S'Traceback (most recent call last):\n  File "/home/SIRI/web2py/gluon/restricted.py", line 217, in restricted\n    exec ccode in environment\n  File "/home/SIRI/web2py/applications/byui_art/controllers/cms.py", line 230, in <module>\n  File "/home/SIRI/web2py/gluon/globals.py", line 372, in <lambda>\n    self._caller = lambda f: f()\n  File "/home/SIRI/web2py/gluon/tools.py", line 3239, in f\n    return action(*a, **b)\n  File "/home/SIRI/web2py/applications/byui_art/controllers/cms.py", line 45, in items_manage\n    db.geo_item.f_qrcode))\n  File "/home/SIRI/web2py/gluon/sqlhtml.py", line 2764, in smartgrid\n    user_signature=user_signature, **kwargs)\n  File "/home/SIRI/web2py/gluon/sqlhtml.py", line 2055, in grid\n    onsuccess=oncreate)\n  File "/home/SIRI/web2py/gluon/html.py", line 2215, in process\n    self.validate(**kwargs)\n  File "/home/SIRI/web2py/gluon/html.py", line 2154, in validate\n    if self.accepts(**kwargs):\n  File "/home/SIRI/web2py/gluon/sqlhtml.py", line 1574, in accepts\n    self.vars.id = self.table.insert(**fields)\n  File "/home/SIRI/web2py/gluon/dal.py", line 9003, in insert\n    ret =  self._db._adapter.insert(self, self._listify(fields))\n  File "/home/SIRI/web2py/gluon/dal.py", line 1311, in insert\n    raise e\nIntegrityError: foreign key constraint failed\n'
+p334
+s.

@@ -1,0 +1,31 @@
+response.title = settings.title
+response.subtitle = settings.subtitle
+response.meta.author = '%(author)s <%(author_email)s>' % settings
+response.meta.keywords = settings.keywords
+response.meta.description = settings.description
+response.menu = [
+(T('Index'),URL('default','index')==URL(),URL('default','index'),[]),
+(T('Manage'),[
+    (T('Groups'),URL('default','groups_manage')==URL(),URL('default','groups_manage'),[]),
+    (T('Exhibits'),URL('default','exhibits_manage')==URL(),URL('default','exhibits_manage'),[]),
+    (T('Display'),URL('default','display_manage')==URL(),URL('default','display_manage'),[]),
+    (T('Items'),URL('default','items_manage')==URL(),URL('default','items_manage'),[]),
+    (T('Categories'),URL('default','categories_manage')==URL(),URL('default','categories_manage'),[]),
+    (T('Tours'),URL('default','tours_manage')==URL(),URL('default','tours_manage'),[]),
+    (T('Comments'),URL('default','comments_manage')==URL(),URL('default','comments_manage'),[]),
+    (T('Comments Dash'),URL('default','comments_dash')==URL(),URL('default','comments_dash'),[]),
+    (T('View Comments'),URL('default','view_comments')==URL(),URL('default','view_comments'),[]),
+    (T('Comment Details'),URL('default','comment_details')==URL(),URL('default','comment_details'),[]),
+]),
+(T('Browse'),[
+    (T('View Groups'),URL('default','view_groups')==URL(),URL('default','view_groups'),[]),
+    (T('Veiw Displays'),URL('default','veiw_displays')==URL(),URL('default','veiw_displays'),[]),
+    (T('View Items'),URL('default','view_items')==URL(),URL('default','view_items'),[]),
+    (T('View Tours'),URL('default','view_tours')==URL(),URL('default','view_tours'),[]),
+]),
+(T('Other'),[
+    (T('Group Details'),URL('default','group_details')==URL(),URL('default','group_details'),[]),
+    (T('Display Details'),URL('default','display_details')==URL(),URL('default','display_details'),[]),
+    (T('Item Details'),URL('default','item_details')==URL(),URL('default','item_details'),[]),
+    (T('Tour Details'),URL('default','tour_details')==URL(),URL('default','tour_details'),[]),
+])]

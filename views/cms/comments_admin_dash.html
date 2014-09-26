@@ -1,0 +1,8 @@
+{{extend 'layout.html'}}
+
+{{=DIV(H2("Comments Awaiting Approval", _class="span12"), _class="row")}}
+{{=pendingGrid}}
+{{=DIV(H2("Recently Approved Comments", _class="span12"), _class="row")}}
+{{=approvedGrid}}
+{{=DIV(H2("Recently Rejected Comments", _class="span12"), _class="row")}}
+{{=rejectedGrid}}

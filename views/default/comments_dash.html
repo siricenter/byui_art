@@ -1,0 +1,5 @@
+{{extend 'layout.html'}}
+
+<h2>Manage comments</h2>
+{{=LOAD('comments','item_load.load',ajax=True)}}
+{{=LOAD('comments','coll_load.load',ajax=True)}}

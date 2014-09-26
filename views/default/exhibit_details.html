@@ -1,0 +1,40 @@
+{{extend 'layout.html'}}
+{{if exhibit:}}
+<div class="row">
+    <div class="slider span12">
+        {{#for path in imgPaths:}}
+        <img src="{{#=path}}" alt="Slider Image">
+        <p>This would be a place for images related to the exhibit</p>
+        {{#pass}}
+    </div>
+    <div class="tag-line span12">
+        <p>{{#=group.tagline}}</p> 
+        <h3>This is a short tagline identifying the exhibit</h3>
+    </div>
+    <div class="featured">
+        <p class="span6">this would be a spot for a main image</p>
+        <ul class="span5">
+        <!-- TODO: We need to decide how featured items will be displayed. Logic is complete in the 
+        controller and may be accessed through the variable below -->
+        {{#for item in featuredItems:}}
+            <!-- <li>
+            {{#=A(IMG(_src=URL('download',args=item.f_image), _alt=item.f_name), _href=URL('item_details', vars=dict(itemId=item.id)))}}
+            </li> -->
+        {{#pass}}
+            <li>featured item 1</li>
+            <li>featured item 2</li>
+            <li>featured item 3</li>
+        </ul>
+    </div>
+{{=DIV(H2('Collections in this exhibit'), _class="span12")}}
+    {{for collection in collections:}}
+        {{if collection.id != 8:}}
+            {{=DIV(A(DIV(IMG(_src=URL('static/images','rock.jpg'), _alt=""), H2(collection.f_name),P(collection.f_location)), _href=URL('collection_details',vars=dict(collectionId=collection.id))), _id=collection.f_name+"-collection",_class="tile span4")}}
+        {{else:}}
+            <!-- TODO: this block is not working -->
+            {{=DIV(A(DIV(IMG(_src=URL('static/images','rock.jpg'), _alt=""), H2(collection.f_name),P(collection.f_location)), _href=URL('museum_mural',vars=dict(collectionId=collection.id))), _id=collection.f_name+"-collection",_class="tile span4")}}
+        {{pass}}
+    {{pass}}
+
+</div>
+{{pass}}

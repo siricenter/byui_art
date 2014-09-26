@@ -1,0 +1,21 @@
+.group-tile {
+	background-color: lightgrey;
+	box-shadow: 2px 2px 2px;
+}
+
+.exhibit-tile {
+	background-color: lightgrey;
+	box-shadow: 2px 2px 2px;
+}
+
+/*Item Details Page Styling*/
+
+.slider-row {background-color:lightgrey; height:300px;}
+
+.tag-line-row {}
+
+.span12-text-center {text-align:center;}
+
+.featured-row {}
+
+.span4 {background:lightgrey;}

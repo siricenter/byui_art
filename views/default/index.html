@@ -1,0 +1,7 @@
+{{extend 'layout.html'}}
+
+<div class="row">
+{{for exhibit in exhibits:}}
+	{{=DIV(A(DIV(IMG(_src=URL('static/images','rock.jpg'), _alt=""), H2(exhibit.f_name), P(exhibit.f_description)), _href=URL('exhibit_details', vars=dict(exhibitId=exhibit.id))), _id=exhibit.f_name+"-exhibit", _class="tile span4")}}
+{{pass}}
+</div>

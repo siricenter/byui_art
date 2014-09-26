@@ -1,0 +1,17 @@
+[2013-11-19 16:24:06] START
+[2013-11-19 16:24:06] EDIT mqr/controllers/cms.py: -1
+[2013-12-13 13:31:19] UPLOAD /home/chris/web2py/applications/mqr/modules/setuptools.py: 3020
+[2013-12-13 13:32:05] DELETE mqr/modules/setuptools.py: -3020
+[2013-12-13 13:43:00] UPLOAD /home/chris/web2py/applications/mqr/modules/main.py: 256
+[2013-12-13 13:43:25] DELETE mqr/modules/main.py: -256
+[2013-12-13 13:45:52] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/main.py: 256
+[2013-12-13 13:46:12] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/constants.py: 4
+[2013-12-13 13:46:28] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/base.py: 275
+[2013-12-13 13:46:43] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/util.py: 392
+[2013-12-13 13:47:20] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/__init__.py: 16
+[2013-12-13 13:47:42] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/exceptions.py: 2
+[2013-12-13 13:48:17] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/image/base.py: 50
+[2013-12-13 13:48:41] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/image/__init__.py: 0
+[2013-12-13 13:48:59] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/image/pil.py: 24
+[2013-12-13 13:49:15] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/image/pure.py: 40
+[2013-12-13 13:49:29] UPLOAD /home/chris/web2py/applications/mqr/modules/qrcode/image/svg.py: 122

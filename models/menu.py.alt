@@ -1,0 +1,76 @@
+###################################################################################################
+################### Below this line is the working menu to generate all levels dynamically ########
+
+geo_sub = []
+entity1_sub = []
+entity2_sub = []
+
+response.menu = [
+    (T('Index'),URL('default','index')==URL(),URL('default','index'),[]),
+    (T('Entities'),URL('default','index')==URL(),URL('default','index'),[
+        (T('Geology Musuem'),URL('default','index')==URL(),URL('default','index'),geo_sub) # ,
+        #(T('Entity 1'),URL('entity1_c','index')==URL(),URL('entity1_c','index')[entity1_sub]),
+        #(T('Entity 2'),URL('entity2_c','index')==URL(),URL('entity2_c','index')[entity2_sub])
+        ]
+    )
+]
+
+exhibits = db(db.geo_exhibit).select()
+for ex in exhibits: 
+    ex_sub = []
+    geo_sub += [
+        (T(ex.f_name),URL('default','exhibit_details',vars=dict(exhibitId=ex.id))==URL(),URL('default','exhibit_details',vars=dict(exhibitId=ex.id)),ex_sub)
+    ]
+    collections = db(db.geo_collection.f_exhibit_id == ex.id).select()
+    for col in collections: 
+        col_sub = []
+        ex_sub += [
+            (T(col.f_name),URL('default','collection_details',vars=dict(collectionId=col.id))==URL(),URL('default','collection_details',vars=dict(collectionId=col.id)),col_sub)
+        ]
+        items = db(db.geo_item.f_collection_id == col.id).select()
+        for item in items:
+            col_sub += [
+                (T(item.f_name),URL('default','item_details',vars=dict(itemId=item.id))==URL(),URL('default','item_details',vars=dict(itemId=item.id)),[])
+        ]
+
+exhibits = db(db.en1_exhibit).select()
+for ex in exhibits:
+  ex_sub = [] 
+    entity1_sub += [
+        (T(ex.f_name),URL('entity1_c','exhibit_details',vars=dict(exhibitId=ex.id))==URL(),URL('entity1_c','exhibit_details',vars=dict(exhibitId=ex.id)),[ex_sub])
+    ]
+    collections = db(db.en1_collections.f_exhibit_id == ex.id).select()
+    for col in collections: 
+        ex_sub += [
+            (T(col.f_name),URL('entity1_c','collection_details',vars=dict(collectionId=col.id))==URL(),URL('entity1_c','collection_details',vars=dict(collectionId=col.id)),[])
+        ]
+        items = db(db.en1_item.f_collection_id == col.id).select()
+        for item in items:
+            col_sub += [
+                (T(item.f_name),URL('entity2_c','item_details',vars=dict(itemId=item.id))==URL(),URL('entity2_c','item_details',vars=dict(itemId=item.id)),[])
+        ]
+
+exhibits = db(db.en2_exhibit).select()
+for ex in exhibits:
+  ex_sub = [] 
+    entity1_sub += [
+        (T(ex.f_name),URL('entity2_c','exhibit_details',vars=dict(exhibitId=ex.id))==URL(),URL('entity2_c','exhibit_details',vars=dict(exhibitId=ex.id)),[ex_sub])
+    ]
+    collections = db(db.en1_collections.f_exhibit_id == ex.id).select()
+    for col in collections: 
+        ex_sub += [
+            T(col.f_name),URL('entity2_c','collection_details',vars=dict(collectionId=col.id))==URL(),URL('entity2_c','collection_details',vars=dict(collectionId=col.id)),[])
+        ]
+        items = db(db.en2_item.f_collection_id == col.id).select()
+        for item in items:
+            col_sub += [
+                (T(item.f_name),URL('entity2_c','item_details',vars=dict(itemId=item.id))==URL(),URL('entity2_c','item_details',vars=dict(itemId=item.id)),[])
+        ]
+
+# This may work, though I don't know if http_referer is going to work well.
+is_mobile=request.user_agent().is_mobile
+if is_mobile:
+    response.menu = [
+        (T('Index'),URL('default','index')==URL(),URL('default','index'),[]),
+        (T('Back'),URL(request.env.http_referer)==URL(),URL(request.env.http_referer),[])
+    ]

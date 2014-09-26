@@ -1,0 +1,5 @@
+t_exhibit.id,t_exhibit.f_name,t_exhibit.f_group_id,t_exhibit.f_description,t_exhibit.f_categories,t_exhibit.f_tags,t_exhibit.is_active,t_exhibit.created_on,t_exhibit.created_by,t_exhibit.modified_on,t_exhibit.modified_by
+1,Geology Museum,1,Main museum room,0,||,True,2013-11-19 23:43:17,11,2013-11-19 23:43:17,11
+2,Romney Halls,1,Display cases throughout the halls of the Romney building.,0,||,True,2013-11-19 23:43:43,11,2013-11-19 23:43:43,11
+3,World War II Aircrafts,4,Flight Museum,0,||,True,2013-11-19 23:44:13,11,2013-11-19 23:44:13,11
+4,Aircraft history,4,Aircraft history,0,||,True,2013-11-19 23:44:32,11,2013-11-19 23:44:32,11

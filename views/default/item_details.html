@@ -1,0 +1,120 @@
+{{extend 'layout.html'}}
+
+{{if item:}}
+<div class="row">
+
+<div class="span12 slider">
+    <!-- Inserting image if available -->
+    {{if item.f_image:}}
+    	{{=IMG(_src=URL('download', args=item.f_image), _alt=item.f_name)}}
+    {{pass}}
+</div>
+
+<div class="span6">
+    <div class="item-description">
+    <div><h4>Description:</h4></div>
+    {{if item.f_description:}}
+        {{=item.f_description}}
+    {{pass}}
+    </div>
+</div>
+
+<!-- TODO: Verify list of all relevant fields so we can finalize alt fields and labels -->
+<div class="span6">
+    <div class="alt-info-container">
+        <div><h4>More Information:</h4></div>
+        {{if item.f_alt1:}}
+        <div id="alt1">
+            <p>Sample number: <span class="alt-value">{{=item.f_alt1}}</span></p>
+        </div>
+        {{pass}}
+        {{if item.f_alt2:}}
+        <div id="alt2">
+            <p>
+                Origin: <span class="alt-value">{{=item.f_alt2}}</span> 
+                <a href="https://maps.google.com/maps?q={{=location}}" class="alt-map-marker" 
+                target="_blank">
+                    <i class="icon-map-marker"></i>
+                </a> 
+            </p>
+        </div>
+        {{pass}}
+        {{if item.f_alt3:}}
+        <div id="alt3">
+            <p>Composition: <span class="alt-value">{{=XML(T(item.f_alt3), sanitize = True)}}</span></p>
+        </div>
+        {{pass}}
+        {{if item.f_alt4:}}
+        <div id="alt4">
+            <p>Mineral Group: <span class="alt-value">{{=item.f_alt4}}</span></p>
+        </div>
+        {{pass}}
+        {{if item.f_alt5:}}
+        <div id="alt5">
+            <p>Dimensions: <span class="alt-value">{{=item.f_alt5}}</span></p>
+        </div>
+        {{pass}}
+        {{if item.f_alt7:}}
+        <div id="alt7">
+            <p>Time Period: <span class="alt-value">{{=item.f_alt7}}</span></p>
+        </div>
+        {{pass}}
+        {{if item.f_alt6:}}
+        <div id="alt6">
+            <p>Donor: <span class="alt-value">{{=item.f_alt6}}</span></p>
+        </div>
+        {{pass}}
+    </div>
+</div>
+<div class="span12"><h4>More Resources:</h4></div>
+<div class="span4 tile">
+    <div class="wikip-snip">
+        {{if item.f_wiki:}}
+        <p>(From the Wikipedia article {{=A(item.f_wiki, _target="_blank", _href=site)}})</p>
+        {{=P(wiki, _class="wiki")}}
+        {{else:}} 
+        <p>No Wikipedia article available</p>
+        {{pass}}
+    </div>
+</div>
+<div class="span4 tile">
+    <div class="outside-video-set video-container">
+        {{if item.f_youtube1:}}
+            <iframe width="352" height="198" src="//www.youtube.com/embed/{{=item.f_youtube1}}?rel=0" frameborder="0" allowfullscreen></iframe>
+        {{else:}}
+            <p>No Youtube videos available</p>
+        {{pass}}
+        {{if item.f_youtube2:}}
+            <iframe width="352" height="198" src="//www.youtube.com/embed/{{=item.f_youtube2}}?rel=0" frameborder="0" allowfullscreen></iframe>
+        {{pass}}
+    </div>
+</div>
+<div class="span4 tile">
+    <div class="outside-image-set">
+        {{if item.f_extImg1:}}
+            <img src="{{=item.f_extImg1}}" style="width: 350px">
+        {{else:}}
+            <p>No external images available</p>
+        {{pass}}
+        {{if item.f_extImg2:}}
+            <img src="{{=item.f_extImg2}}" style="width: 350px">
+        {{pass}}
+    </div>
+</div>
+<div class="span12">
+    {{=HR()}}
+    <div class="comment-block">
+        {{for post in comments:}}
+            <div class="post">
+                <p>
+                On {{=post.created_on}} {{=post.created_by.first_name}}
+                says <span class="post_body">{{=post.f_comment}}</span>
+                </p>
+            </div>
+        {{pass}}
+        {{=LOAD('comments','item_post.load',ajax=True,args=[itemId])}}
+    </div>
+</div>
+
+</div>
+{{pass}}

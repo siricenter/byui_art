@@ -1,0 +1,68 @@
+{{extend 'layout.html'}} 
+
+<main class="main-content"> 
+    
+    <h1>{{=response.title}}</h1> 
+    
+    <!-- <div class="groupdetails-image"> 
+    <img src="{{#item.imgPath}}" alt="slider image"> 
+    #TODO: Picture storage path in database? 
+    </div> -->
+    
+<!--<div class="tag-line">
+        <p>{{#=group.tagline}}</p> 
+    </div> -->
+    
+    <div class="desc">
+        <p>{{=response.subtitle}}</p>
+    </div>
+    
+    <!-- <div class="featured">
+        <ul>
+        	{{#for item in featuredItems:}}
+            <li><img src="{{#featured-item.imgPath}}">
+            {{#A(item.name, _href=URL('default', 'item_details', args=item.id)}}</li>
+            {{#pass}}
+        </ul>
+    </div> -->
+    
+    <div class="sub-group-slider"> <!--The exhibit in this case-->
+        {{#for path in imgPaths:}}
+        <img src="{{#=path}}" alt="group slider image">
+        {{#pass}}
+    </div>
+    
+</main>
+    
+<!-- <div class="slider">
+    {{#for path in imgPaths:}}
+    <img src="{{#=path}}" alt="slider image">
+    {{#pass}}
+</div>
+
+<div class="tag-line">
+    <p>{{#=group.tagline}}</p> 
+</div> -->
+
+<!-- <div class="featured">
+    <ul>
+    	{{#for item in featuredItems:}}
+        <li><img src="{{#item.imgPath}}">
+        {{#A(item.name, _href=URL('default', 'item_details', args=item.id)}}</li>
+        {{#pass}}
+    </ul>
+</div> -->
+{{=DIV(H1('Geology Museum Exhibits'), _class="row")}}
+<div class="row">
+{{for exhibit in exhibits:}}
+    {{=DIV(A(DIV(IMG(_src=URL('static/images','gplus-32.png'), _alt=""), H2(exhibit.f_name), P(exhibit.f_description)), _href=URL('exhibit_details', vars=dict(exhibitId=exhibit.id))), _id=exhibit.f_name+"-exhibit", _class="exhibit-tile span4")}}
+{{pass}}
+</div>
+
+<!-- for debug purposes -->
+{{=HR()}}
+{{= A('back', _href=URL('view_groups'))}}
+{{=HR()}}
+{{#=BEAUTIFY(group)}}
+{{=HR()}}
+{{=BEAUTIFY(exhibits)}}

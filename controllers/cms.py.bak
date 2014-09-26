@@ -1,0 +1,62 @@
+# coding: utf8
+# TODO: Determine group architecture and edit the commented @auth.requires_membership fieldsgit
+
+@auth.requires(auth.has_membership('admin'))
+# @auth.requires_login()
+def groups_manage():
+    form = SQLFORM.smartgrid(db.t_group,onupdate=auth.archive,links_in_grid=False)
+    return locals()
+
+@auth.requires(auth.has_membership('admin'))
+# @auth.requires_login()
+def exhibits_manage():
+    form = SQLFORM.smartgrid(db.geo_exhibit,onupdate=auth.archive,links_in_grid=False)
+    return locals()
+
+@auth.requires(auth.has_membership('collection_admin') or auth.has_membership('admin'))
+# @auth.requires_login()
+def display_manage():
+    form = SQLFORM.smartgrid(db.geo_collection,onupdate=auth.archive,links_in_grid=False)
+    return locals()
+
+@auth.requires(auth.has_membership('collection_admin') or auth.has_membership('admin'))
+# @auth.requires_login()
+def items_manage():
+    db.geo_item.truncate('RESTART IDENTITY CASCADE')
+    form = SQLFORM.smartgrid(db.geo_item,onupdate=auth.archive)
+    return locals()
+
+@auth.requires(auth.has_membership('collection_admin') or auth.has_membership('admin'))
+# @auth.requires_login()
+def categories_manage():
+    form = SQLFORM.smartgrid(db.t_category,onupdate=auth.archive,links_in_grid=False)
+    return locals()
+
+@auth.requires(auth.has_membership('collection_admin') or auth.has_membership('admin') or auth.has_membership('admin'))
+# @auth.requires_login()
+def comments_manage():
+    db.t_comment.f_title.writable = False
+    db.t_comment.f_comment.writable = False
+    db.t_comment.f_author.writable = False
+    form = SQLFORM.smartgrid(db.t_comment,onupdate=auth.archive,create=False,links_in_grid=False,
+        exportclasses=dict(
+            csv=False, 
+            csv_with_hidden_cols=False,
+            xml=False,
+            json=False, 
+            tsv_with_hidden_cols=False,
+            tsv=False))
+    return dict(form=form)
+
+@auth.requires(auth.has_membership('collection_admin') or auth.has_membership('admin'))
+# @auth.requires_login()
+def tours_manage():
+    form = SQLFORM.smartgrid(db.t_tour,onupdate=auth.archive,links_in_grid=False)
+    return locals()
+
+@auth.requires(auth.has_membership('admin'))
+# @auth.requires_login()
+def users_manage():
+    form = SQLFORM.smartgrid(db.auth_membership,onupdate=auth.archive,links_in_grid=False,
+        fields=(db.auth_membership.user_id,db.auth_membership.group_id))
+    return locals()

@@ -1,0 +1,115 @@
+# -*- coding: utf-8 -*-
+### required - do no delete
+def user(): return dict(form=auth())
+def download(): return response.download(request,db)
+def call(): return service()
+### end requires
+def index():
+    return dict()
+
+def error():
+    return dict()
+
+@auth.requires_login()
+def groups_manage():
+    form = SQLFORM.smartgrid(db.t_group,onupdate=auth.archive)
+    return locals()
+
+@auth.requires_login()
+def exhibits_manage():
+    form = SQLFORM.smartgrid(db.geo_exhibit,onupdate=auth.archive)
+    return locals()
+
+@auth.requires_login()
+def display_manage():
+    form = SQLFORM.smartgrid(db.geo_collection,onupdate=auth.archive)
+    return locals()
+
+@auth.requires_login()
+def items_manage():
+    form = SQLFORM.smartgrid(db.geo_item,onupdate=auth.archive)
+    return locals()
+
+@auth.requires_login()
+def categories_manage():
+    form = SQLFORM.smartgrid(db.t_category,onupdate=auth.archive)
+    return locals()
+
+@auth.requires_login()
+def comments_manage():
+    db.t_comment.f_title.writable = False
+    db.t_comment.f_comment.writable = False
+    db.t_comment.f_author.writable = False
+    form = SQLFORM.smartgrid(db.t_comment,onupdate=auth.archive,deletable=False, 
+        exportclasses=dict(
+            csv=False, 
+            csv_with_hidden_cols=False,
+            xml=False,
+            json=False, 
+            tsv_with_hidden_cols=False,
+            tsv=False))
+    return dict(form=form)
+
+@auth.requires_login()
+def view_groups():
+    
+    entity = request.vars['entity_id']
+    view = db(db.entity.id == entity).select()
+    
+    return dict()
+
+@auth.requires_login()
+def group_details():
+    groupId = request.vars['group_id'] #TODO: syntax for grabbing request.vars
+    groupId = 1 #TODO: take this line out once a link is created...
+    group = db(db.t_group.id == groupId).select()
+    #exhibits = db(db.t_exibit.f_group_id == groupId).select()
+    #featuredItems = db((db.joinedtable.id  == groupId) & (db.joinedtable.featured == True)).select() 
+    #TODO: change the joinedtable name above
+    #TODO: potentially limit the featured items to a smaller number
+    
+    return dict(group = group[0]) #exhibits = exhibits, featuredItems = featuredItems)
+
+@auth.requires_login()
+def veiw_displays():
+    return dict()
+
+@auth.requires_login()
+def display_details():
+    return dict()
+
+@auth.requires_login()
+def view_items():
+    return dict()
+
+@auth.requires_login()
+def item_details():
+    return dict()
+
+@auth.requires_login()
+def view_tours():
+    return dict()
+
+@auth.requires_login()
+def tour_details():
+    return dict()
+
+@auth.requires_login()
+def tours_manage():
+    form = SQLFORM.smartgrid(db.t_tour,onupdate=auth.archive)
+    return locals()
+
+@auth.requires_login()
+def comments_dash():
+    db.t_comment.f_approved.writable = False
+    db.t_comment.f_author.writable = False
+    form = SQLFORM.grid(db.t_comment.f_author == auth.user_id,onupdate=auth.archive)
+    return dict(form=form)
+
+@auth.requires_login()
+def view_comments():
+    return dict()
+
+@auth.requires_login()
+def comment_details():
+    return dict()

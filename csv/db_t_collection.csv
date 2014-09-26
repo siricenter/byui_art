@@ -1,0 +1,8 @@
+t_collection.id,t_collection.f_name,t_collection.f_exhibit_id,t_collection.f_categories,t_collection.f_location,t_collection.f_tags,t_collection.is_active,t_collection.created_on,t_collection.created_by,t_collection.modified_on,t_collection.modified_by
+1,Geode Cabinet,1,0,ROM 247A,||,True,2013-11-19 23:45:12,11,2013-11-19 23:45:12,11
+2,Fossils,1,0,ROM 247B,||,True,2013-11-19 23:45:48,11,2013-11-19 23:45:48,11
+3,Aquarium,1,0,ROM 247C,||,True,2013-11-19 23:46:05,11,2013-11-19 23:46:05,11
+4,TRex Case,2,0,ROM South,||,True,2013-11-19 23:46:22,11,2013-11-19 23:46:22,11
+5,Planetarium Cases,2,0,ROM Planet,||,True,2013-11-19 23:46:50,11,2013-11-19 23:46:50,11
+6,Planes,3,0,N,||,True,2013-11-19 23:47:13,11,2013-11-19 23:47:13,11
+7,Gear,3,0,S,||,True,2013-11-19 23:47:35,11,2013-11-19 23:47:35,11

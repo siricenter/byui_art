@@ -1,0 +1,6 @@
+geo_collection.id,geo_collection.f_name,geo_collection.f_exhibit_id,geo_collection.f_categories,geo_collection.f_location,geo_collection.f_tags
+1,Geode Cabinet,1,0,ROM 247A,||
+2,Fossils,1,0,ROM 247B,||
+3,Aquarium,1,0,ROM 247C,||
+4,TRex Case,2,0,ROM South,||
+5,Planetarium Cases,2,0,ROM Planet,||

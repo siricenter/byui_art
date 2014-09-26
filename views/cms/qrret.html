@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+<div class="row">
+	{{=form}}
+	<div class="span12">
+		{{=BR()}}
+		{{if not form.vars:}}
+		<h4>Last Retrieved Codes</h4>
+		{{pass}}
+		{{try:}}
+			{{for item in session.qr:}}
+				{{=P(A("QR Codes Page", _target="_blank", _href=URL('static', 'temp/' + item), _alt="QR Code"))}}
+			{{pass}}
+		{{except:}}
+			<p>No files available</p>
+		{{pass}}
+	</div>
+</div>

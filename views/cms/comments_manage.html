@@ -1,0 +1,10 @@
+{{extend 'layout.html'}}
+
+{{if subset == 'all':}}
+	{{=H3(A('Show pending comments only',_href=URL('comments_manage')))}}
+{{else:}}
+	{{=H3(A('Show all comments',_href=URL('comments_manage',vars=dict(show='all'))))}}
+{{pass}}
+
+{{=LOAD('comments','item_comm_mang.load',vars=dict(subset=subset),ajax=True)}}
+{{=LOAD('comments','coll_comm_mang.load',vars=dict(subset=subset),ajax=True)}} 

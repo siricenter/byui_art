@@ -1,0 +1,35 @@
+{{extend 'layout.html'}} 
+
+<main class="main-content"> 
+    
+    <h1>{{=group.f_name}}</h1> 
+    
+    <!-- <div class="groupdetails-image"> 
+    <img src="{{#item.imgPath}}" alt="slider image"> 
+    #TODO: Picture storage path in database? 
+    </div> -->
+    
+<!--<div class="tag-line">
+        <p>{{#=group.tagline}}</p> 
+    </div> -->
+    
+    <div class="desc">
+        <p>{{=group.f_description}}</p>
+    </div>
+    
+    <!-- <div class="featured">
+        <ul>
+        	{{#for item in featuredItems:}}
+            <li><img src="{{#featured-item.imgPath}}">
+            {{#A(item.name, _href=URL('default', 'item_details', args=item.id)}}</li>
+            {{#pass}}
+        </ul>
+    </div> -->
+    
+    <div class="sub-group-slider"> <!--The exhibit in this case-->
+        {{#for path in imgPaths:}}
+        <img src="{{#=path}}" alt="group slider image">
+        {{#pass}}
+    </div>
+    
+</main>

@@ -1,0 +1,292 @@
+(dp0
+S'page_display_manage'
+p1
+S'## Manage display\r\n\r\n{{=form}}'
+p2
+sS'page_group_details'
+p3
+S'[]'
+p4
+sS'table_items'
+p5
+(lp6
+S'name'
+p7
+aS'display_id display'
+p8
+aS'description text'
+p9
+aS'categories multiple'
+p10
+aS'tags multiple'
+p11
+asS'table_groups'
+p12
+(lp13
+S'name'
+p14
+aS'addr1'
+p15
+aS'addr2'
+p16
+aS'city'
+p17
+aS'state'
+p18
+aS'zip'
+p19
+aS'phone'
+p20
+aS'email'
+p21
+aS'active boolean'
+p22
+asS'table_auth_user'
+p23
+(lp24
+S'username'
+p25
+aS'first_name'
+p26
+aS'last_name'
+p27
+aS'email'
+p28
+aS'password'
+p29
+asS'table_categories'
+p30
+(lp31
+S'name'
+p32
+aS'description text'
+p33
+asS'tables'
+p34
+(lp35
+S'auth_user'
+p36
+aS'groups'
+p37
+aS'exhibits'
+p38
+aS'display'
+p39
+aS'items'
+p40
+aS'categories'
+p41
+aS'comments'
+p42
+aS'tours'
+p43
+asS'page_items_manage'
+p44
+S'## Manage items\r\n\r\n{{=form}}'
+p45
+sS'page_categories_manage'
+p46
+S'## Manage categories\r\n\r\n{{=form}}'
+p47
+sS'page_view_comments'
+p48
+S'[]'
+p49
+sS'page_error'
+p50
+S'# Error: the document does not exist'
+p51
+sS'table_exhibits'
+p52
+(lp53
+S'name'
+p54
+aS'group_id group'
+p55
+aS'categories multiple'
+p56
+aS'tags multiple'
+p57
+asS'page_exhibits_manage'
+p58
+S'## Manage exhibits\r\n\r\n{{=form}}'
+p59
+sS'params'
+p60
+(lp61
+(S'title'
+p62
+S'QR Platform'
+p63
+tp64
+a(S'subtitle'
+p65
+S'Rich content, ease of use, quality of work'
+p66
+tp67
+a(S'author'
+p68
+S'Evan Caldwell'
+p69
+tp70
+a(S'author_email'
+p71
+S'e.caldwell@sirinstitute.org'
+p72
+tp73
+a(S'keywords'
+p74
+S'qr, museum, gallery, university'
+p75
+tp76
+a(S'description'
+p77
+S'This is a platform to allow access to rich content for museums, galleries and universities via a simple QR code setup.'
+p78
+tp79
+a(S'layout_theme'
+p80
+S'Default'
+p81
+tp82
+a(S'database_uri'
+p83
+S'sqlite://storage.sqlite'
+p84
+tp85
+a(S'security_key'
+p86
+S'fd06c333-4922-400d-886b-d119a2c6d1be'
+p87
+tp88
+a(S'email_server'
+p89
+S'localhost'
+p90
+tp91
+a(S'email_sender'
+p92
+S'info@sirinstitute.com'
+p93
+tp94
+a(S'email_login'
+p95
+S''
+p96
+tp97
+a(S'login_method'
+p98
+S'local'
+p99
+tp100
+a(S'login_config'
+p101
+g96
+tp102
+a(S'plugins'
+p103
+(lp104
+tp105
+asS'page_tours_manage'
+p106
+S'## Manage tours\n\n{{=form}}'
+p107
+sS'page_view_groups'
+p108
+S'[]'
+p109
+sS'page_comments_manage'
+p110
+S'## Manage comments\r\n\r\n{{=form}}'
+p111
+sS'table_display'
+p112
+(lp113
+S'name'
+p114
+aS'exhibit_id exhibit'
+p115
+aS'categories multiple'
+p116
+aS'tags multiple'
+p117
+asS'table_tours'
+p118
+(lp119
+S'name'
+p120
+aS'description text'
+p121
+asS'page_groups_manage'
+p122
+S'## Manage groups\r\n\r\n{{=form}}'
+p123
+sS'page_veiw_displays'
+p124
+S'[]'
+p125
+sS'pages'
+p126
+(lp127
+S'index'
+p128
+aS'error'
+p129
+aS'groups_manage'
+p130
+aS'exhibits_manage'
+p131
+aS'display_manage'
+p132
+aS'items_manage'
+p133
+aS'categories_manage'
+p134
+aS'comments_manage'
+p135
+aS'view_groups'
+p136
+aS'group_details'
+p137
+aS'veiw_displays'
+p138
+aS'display_details'
+p139
+aS'view_items'
+p140
+aS'item_details'
+p141
+aS'view_tours'
+p142
+aS'tour_details'
+p143
+aS'tours_manage'
+p144
+aS'comments_dash'
+p145
+aS'view_comments'
+p146
+aS'comment_details'
+p147
+asS'table_comments'
+p148
+(lp149
+S'title'
+p150
+aS'comment'
+p151
+aS'author auth_user'
+p152
+asS'name'
+p153
+S'mqr'
+p154
+sS'page_index'
+p155
+S'# Welcome to my new app'
+p156
+sS'page_comment_details'
+p157
+S'[]'
+p158
+s.

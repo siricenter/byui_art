@@ -1,0 +1,5 @@
+t_group.id,t_group.f_name,t_group.f_entity_id,t_group.f_description,t_group.is_active,t_group.created_on,t_group.created_by,t_group.modified_on,t_group.modified_by
+1,Geology Department,1,Geology Department,True,2013-11-19 23:41:35,11,2013-11-19 23:41:35,11
+2,Art Department,1,Art Department,True,2013-11-19 23:42:09,11,2013-11-19 23:42:09,11
+3,Religion Department,1,Religion Department,True,2013-11-19 23:42:26,11,2013-11-19 23:42:26,11
+4,Flight Museum,2,Flight Museum,True,2013-11-19 23:42:47,11,2013-11-19 23:42:47,11

@@ -1,0 +1,148 @@
+{{extend 'layout.html'}}
+{{if collection:}}
+<div class="row">
+	<div class="span12">
+		<!-- MAIN SHOWCASE CONTAINER -->
+		<div id="IMAGE_MAP">
+			<!-- SHOWCASE IMAGE -->
+			{{=IMG(_src=URL('static/images','geology_mural_sm.jpg'), _alt="")}}
+			<!-- WRAPPER FOR TOOLTIP/BULLETS -->
+			<div class="SC_Tooltips">
+			    <!-- Pinecone FIRST TOOLTIP. ALL SETTINGS ARE PASSED IN PER TOOLTIP AS DATA-SC-... ATTRIBUTES -->
+				<div class="showcase_tooltip SC_ToolTip1" 
+					data-SC-FlickerEffectIn="easeOutExpo" data-SC-FlickerEffectOut="easeInExpo"
+					data-SC-FlickerFadeSpeedIn="1600" data-SC-FlickerFadeSpeedOut="1000" 
+					data-SC-FlickerSizeFactor="2" data-SC-FlickerOpacity="0" 
+
+					data-SC-Top="90px" data-SC-Left="80px" 
+					data-SC-ToolTipPositionTop="70px" data-SC-ToolTipPositionLeft="40px" 
+					data-SC-StartWidth="25px" data-SC-EndWidth="320px" 
+					data-SC-StartHeight="25px" data-SC-EndHeight="100px" 
+					data-SC-StartBorderRadius="30px" data-SC-EndBorderRadius="8px" 
+					data-SC-StartBorderColor="#333" data-SC-EndBorderColor="#272727" 
+					data-SC-StartBorderSize="0px" data-SC-EndBorderSize="6px" 
+					data-SC-StartColor="#666666" data-SC-EndColor="#585858" 
+					data-SC-SpeedIn="200" data-SC-SpeedOut="200" 
+					data-SC-EffectIn="easeOutExpo" data-SC-EffectOut="easeInExpo" 		
+
+					data-SC-LightboxPositionTop="40px" data-SC-LightboxPositionLeft="200px"
+					data-SC-LightboxSpeedIn="300" data-SC-LightboxSpeedOut="200" 
+					data-SC-LightboxEffectIn="easeOutExpo" data-SC-LightboxEffectOut="easeInExpo" 
+					data-SC-LightboxWidth="500px" data-SC-LightboxHeight="325px" 
+					data-SC-LightboxColor="#580405"	data-SC-LightboxClass="SC_Lightbox1" 
+					data-SC-LightboxStartBorderRadius="10px" data-SC-LightboxEndBorderRadius="10px" 
+
+					data-SC-LightboxContentSpeedIn="200" data-SC-LightboxContentSpeedOut="1500" 
+					data-SC-LightboxContentEffectIn="fade" data-SC-LightboxContentEffectOut="fade" 
+					data-SC-LightboxControlsPadding="10px" data-SC-LightboxControlsFadeSpeed="500">
+
+					<!-- TOOLTIP CONTENTS CONTAINER -->
+					<div class="tooltip_content SC_ToolTip1_Content">
+						<!-- WRITE STRAIGHT HTML INSIDE HERE
+						<img class="SC_ToolTip1_Image" src="../static/images/showcase/small_image3.png" width="90px" height="74px"/> -->
+						<h2 class="SC_ToolTip1_Header">Old Pinecone</h2>
+						<p class="SC_ToolTip1_Text">This is what pinecones looked like before they were fossils</p>
+					</div><!-- /TOOLTIP CONTENTS -->
+
+					<!-- LIGHTBOX CONTENTS CONTAINER -->
+					<div class="SC_Lightbox_Content SC_Lightbox1">
+						<!-- WRITE STRAIGHT HTML INSIDE HERE -->
+						<p class="SC_Lightbox1_Text">With over 40 animation options, Showcase is built to be flexible. Add unlimited Bullets and customize each set of Bullet/ToolTip/Lightbox independently. Quickly and easily use it for Image Mapping, Full Website Tours, Portfolio Details, More Information Hovers and more.</p>
+					</div><!-- /LIGHTBOX CONTENTS -->
+				</div><!-- /TOOLTIP 1 -->
+
+				<!-- Bug -->
+			    <div class="showcase_tooltip SC_ToolTip2" 
+					data-SC-FlickerEffectIn="easeOutExpo" data-SC-FlickerEffectOut="easeInExpo" 
+					data-SC-FlickerFadeSpeedIn="1000" data-SC-FlickerFadeSpeedOut="1000" 
+					data-SC-FlickerSizeFactor="1" data-SC-FlickerOpacity=".5" 
+
+					data-SC-Top="245px" data-SC-Left="225px" 
+					data-SC-ToolTipPositionTop="240px" data-SC-ToolTipPositionLeft="215px" 
+					data-SC-StartWidth="25px" data-SC-EndWidth="350px" 
+					data-SC-StartHeight="25px" data-SC-EndHeight="100px" 
+					data-SC-StartBorderRadius="30px" data-SC-EndBorderRadius="8px" 
+					data-SC-StartBorderColor="#333" data-SC-EndBorderColor="#272727" 
+					data-SC-StartBorderSize="0px" data-SC-EndBorderSize="8px" 
+					data-SC-StartColor="#CCC" data-SC-EndColor="#585858" 
+					data-SC-SpeedIn="200" data-SC-SpeedOut="200" 
+					data-SC-EffectIn="easeOutExpo" data-SC-EffectOut="easeInExpo" 
+
+					data-SC-LightboxPositionTop="50px" data-SC-LightboxPositionLeft="300px"
+					data-SC-LightboxEffectIn="easeOutExpo" data-SC-LightboxEffectOut="easeInExpo" 		
+					data-SC-LightboxSpeedIn="300" data-SC-LightboxSpeedOut="300" 	
+					data-SC-LightboxClass="SC_Lightbox2" 
+					data-SC-LightboxWidth="500px" data-SC-LightboxHeight="325px" 
+					data-SC-LightboxColor="#333333" 
+					data-SC-LightboxStartBorderRadius="100px" data-SC-LightboxEndBorderRadius="12px" 
+					
+					data-SC-LightboxContentSpeedIn="300" data-SC-LightboxContentSpeedOut="500"
+					data-SC-LightboxContentEffectIn="drop" data-SC-LightboxContentEffectOut="drop"
+				    data-SC-LightboxControlsPadding="20px" data-SC-LightboxControlsFadeSpeed="500">
+
+					<!-- TOOLTIP CONTENTS CONTAINER -->
+					<div class="tooltip_content SC_ToolTip2_Content">
+						<!-- WRITE STRAIGHT HTML INSIDE HERE -->
+						<img class="SC_ToolTip2_Image" src="../static/images/showcase/small_image.png" width="90px" height="74px"/>
+						<h2 class="SC_ToolTip2_Header">Lorem Ipsum</h2>
+						<p class="SC_ToolTip2_Text">Lorem Ipsum<em>(Lorem Ipsum)</em></p>
+					</div><!-- /TOOLTIP CONTENTS -->
+
+					<!-- LIGHTBOX CONTENTS CONTAINER -->
+					<div class="SC_Lightbox_Content SC_Lightbox2">
+						<p class="SC_Lightbox2_Text">Showcase comes with an <strong>optional</strong> Flicker animation parameter. When enabled, you can control the Size, Position, Growth Ratio, Flicker Rate, Easing and Opacity of each Flickering Bullet. You can add an configure an unlimited number of Showcase Bullets.</p>
+					</div><!-- /LIGHTBOX CONTENTS -->
+				</div><!-- /TOOLTIP 2 -->
+
+				<!-- Grass -->
+			    <div class="showcase_tooltip SC_ToolTip2" 
+					data-SC-FlickerEffectIn="easeOutExpo" data-SC-FlickerEffectOut="easeInExpo" 
+					data-SC-FlickerFadeSpeedIn="1000" data-SC-FlickerFadeSpeedOut="1000" 
+					data-SC-FlickerSizeFactor="1" data-SC-FlickerOpacity=".5" 
+
+					data-SC-Top="360px" data-SC-Left="250px" 
+					data-SC-ToolTipPositionTop="340px" data-SC-ToolTipPositionLeft="215px" 
+					data-SC-StartWidth="25px" data-SC-EndWidth="350px" 
+					data-SC-StartHeight="25px" data-SC-EndHeight="100px" 
+					data-SC-StartBorderRadius="30px" data-SC-EndBorderRadius="8px" 
+					data-SC-StartBorderColor="#333" data-SC-EndBorderColor="#272727" 
+					data-SC-StartBorderSize="0px" data-SC-EndBorderSize="8px" 
+					data-SC-StartColor="#CCC" data-SC-EndColor="#585858" 
+					data-SC-SpeedIn="200" data-SC-SpeedOut="200" 
+					data-SC-EffectIn="easeOutExpo" data-SC-EffectOut="easeInExpo" 
+
+					data-SC-LightboxPositionTop="50px" data-SC-LightboxPositionLeft="300px"
+					data-SC-LightboxEffectIn="easeOutExpo" data-SC-LightboxEffectOut="easeInExpo" 		
+					data-SC-LightboxSpeedIn="300" data-SC-LightboxSpeedOut="300" 	
+					data-SC-LightboxClass="SC_Lightbox2" 
+					data-SC-LightboxWidth="500px" data-SC-LightboxHeight="325px" 
+					data-SC-LightboxColor="#333333" 
+					data-SC-LightboxStartBorderRadius="100px" data-SC-LightboxEndBorderRadius="12px" 
+					
+					data-SC-LightboxContentSpeedIn="300" data-SC-LightboxContentSpeedOut="500"
+					data-SC-LightboxContentEffectIn="drop" data-SC-LightboxContentEffectOut="drop"
+				    data-SC-LightboxControlsPadding="20px" data-SC-LightboxControlsFadeSpeed="500">
+
+					<!-- TOOLTIP CONTENTS CONTAINER -->
+					<div class="tooltip_content SC_ToolTip2_Content">
+						<!-- WRITE STRAIGHT HTML INSIDE HERE -->
+						<img class="SC_ToolTip2_Image" src="../static/images/showcase/small_image.png" width="90px" height="74px"/>
+						<h2 class="SC_ToolTip2_Header">Lorem Ipsum</h2>
+						<p class="SC_ToolTip2_Text">Lorem Ipsum<em>(Lorem Ipsum)</em></p>
+					</div><!-- /TOOLTIP CONTENTS -->
+
+					<!-- LIGHTBOX CONTENTS CONTAINER -->
+					<div class="SC_Lightbox_Content SC_Lightbox2">
+						<p class="SC_Lightbox2_Text">Showcase comes with an <strong>optional</strong> Flicker animation parameter. When enabled, you can control the Size, Position, Growth Ratio, Flicker Rate, Easing and Opacity of each Flickering Bullet. You can add an configure an unlimited number of Showcase Bullets.</p>
+					</div><!-- /LIGHTBOX CONTENTS -->
+				</div><!-- /TOOLTIP 2 -->
+
+
+			</div><!-- /SC_TOOLTIPS (TOOLTIPS WRAPPER CONTAINER) -->
+			
+			<!-- LIGHTBOX SECTION (NO NEED TO CHANGE) -->
+			<div class="SC_Lightbox"></div>
+		</div><!-- /SHOWCASE IMAGE -->
+	</div>
+</div>
+{{pass}}

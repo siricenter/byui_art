@@ -1,0 +1,12 @@
+geo_item.id,geo_item.f_name,geo_item.f_collection_id,geo_item.f_description,geo_item.f_image,geo_item.f_categories,geo_item.f_tags,geo_item.f_featured,geo,geo_item.created_on,geo_item.created_by,geo_item.modified_on,geo_item.modified_by
+1,Koi,3,A Japanese fish,||,||,||,True,True,2013-11-19 23:49:35,11,2013-11-19 23:49:35,11
+2,Goldfish,3,A small and... gold... fish.,||,||,||,False,True,2013-11-19 23:58:31,11,2013-11-19 23:58:31,11
+3,Starfish,3,'It''s a star shaped fish.',||,||,||,False,True,2013-11-19 23:59:24,11,2013-11-19 23:59:24,11
+4,Fish,2,A really old fish fossil,||,||,||,False,True,2013-11-20 00:06:36,11,2013-11-20 00:06:36,11
+5,Dinosaur bones,2,Dunno what it is,||,||,||,False,True,2013-11-20 00:07:41,11,2013-11-20 00:07:41,11
+6,Parachute,7,'it opens so you don''t die',||,||,||,False,True,2013-11-20 00:09:33,11,2013-11-20 00:09:33,11
+7,Helmet,7,For your head,||,||,||,False,True,2013-11-20 00:10:10,11,2013-11-20 00:10:10,11
+8,Geode1,1,I know nothing about geodes but the name.,||,||,||,False,True,2013-11-20 00:10:26,11,2013-11-20 00:10:26,11
+9,Geode2,1,Another one for testing,||,||,||,False,True,2013-11-20 00:10:44,11,2013-11-20 00:10:44,11
+10,T Rex,4,'It''s the little fake fossil.',||,||,||,False,True,2013-11-20 00:11:00,11,2013-11-20 00:11:00,11
+11,More,4,Something else will go in there.,||,||,||,False,True,2013-11-20 00:11:32,11,2013-11-20 00:11:32,11
