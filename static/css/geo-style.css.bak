@@ -1,21 +1,298 @@
-.group-tile {
-	background-color: lightgrey;
-	box-shadow: 2px 2px 2px;
+/* ===== W2P or Bootstrap override Styles ===== */
+.navbar-inner {
+	border-radius: 0;
 }
 
-.exhibit-tile {
-	background-color: lightgrey;
-	box-shadow: 2px 2px 2px;
+.row-bottom-buffer {
+	margin-bottom: 70px;
 }
 
-/*Item Details Page Styling*/
+.page-header {
+	margin: 10px 0 15px;
+}
 
-.slider-row {background-color:lightgrey; height:300px;}
+/* ===== General Styles ===== */
+body {
+	background-color: #f2f2f3;
+}
 
-.tag-line-row {}
+body ul {
+	list-style: none;
+}
 
-.span12-text-center {text-align:center;}
+input[type="checkbox"].qrcheck {
+	margin:5px;
+}
 
-.featured-row {}
+hr {
+	color: #333333;
+	border-color: #333333;
+	margin: 50px 0;
+}
 
-.span4 {background:lightgrey;}
+.container-full {
+	width: 100%;
+}
+
+.slider {
+	background-color: white;
+	border: 1px solid black;
+	/*box-shadow: 0px 3px 3px;*/
+	margin-bottom: 20px;
+	min-height: 250px;
+	overflow: hidden;
+}
+
+.tile {
+	background-color: white;
+	/*box-shadow: 2px 2px 2px;*/
+	margin-bottom: 10px;
+}
+
+.tile img {
+	width: 100%;
+}
+
+.tile div {
+	padding: 10px;
+	border: 1px solid lightblue;
+}
+
+.tile div h2 {
+	margin: 0 auto;
+	width: -moz-max-content;
+	width: -webkit-max-content;
+}
+
+.comment-block textarea {
+	/*width: 150%; TODO: lengthen the comment box without width - messes with responsive*/
+}
+
+
+
+/* ===== Item Details Styles ===== */
+.featured ul li {
+	margin: 15px 0;
+}
+
+.item-description, .alt-info-container {
+	margin-top: 50px;
+	margin-bottom: 50px;
+	padding: 5px;
+}
+
+.alt-info-container div p {
+	color: #979FA3;
+}
+
+.alt-info-name {
+	color: #999999;
+}
+
+.alt-value {
+	color: #212324;
+    padding: 3px 10px;
+}
+
+.alt-map-marker {
+	padding-left: 10px;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25% !important;
+    padding-top: 30px !important; 
+    height: 0; 
+    overflow: hidden;
+}
+ 
+.video-container iframe,
+.video-container object,
+.video-container embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+/*- See more at: http://avexdesigns.com/responsive-youtube-embed/#sthash.7dIrranG.dpuf*/
+
+/***************************************************************************************************/
+/* A. STYLING FOR MAIN SHOWCASE IMAGE/ELEMENT */
+/***************************************************************************************************/
+#IMAGE_MAP {
+	width:1200px;
+	height:636px;
+	padding:0px;
+	position:relative;
+} 
+
+
+/***************************************************************************************************/
+/* B. TOOLTIP STYLING */
+/***************************************************************************************************/
+/* TOOLTIP 1 TOOLTIP */
+div.SC_ToolTip1 {
+	-moz-box-shadow:3px 3px 5px 0px #a2a2a2;
+	-webkit-box-shadow:3px 3px 5px 0px #a2a2a2;
+	box-shadow:3px 3px 5px 0px #a2a2a2;
+	background:url('../images/showcase/tooltip_bg.png') repeat-x top;
+	cursor:pointer;
+}
+
+/* TOOLTIP 1 CONTENT */
+div.SC_ToolTip1_Content {
+	padding:0px 15px 15px 10px;
+	cursor:pointer;
+}
+
+/* TOOLTIP 1 IMAGE */
+img.SC_ToolTip1_Image {
+	width:90px;
+	height:74px;
+	float:left;
+	margin-right:15px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	margin-top:1px;
+	cursor:pointer;
+}
+
+/* TOOLTIP 1 HEADER TEXT */
+h2.SC_ToolTip1_Header {
+	font-family:'TitilliumText22LMedium';
+	font-size:20px;
+	color:#FFF;
+	cursor:pointer;
+}
+
+/* TOOLTIP 1 TEXT */
+p.SC_ToolTip1_Text {
+	font-family:Verdana, Geneva, sans-serif;
+	font-size:16px;
+	line-height:21px;
+	color:#FFFFFF;
+	padding-right:5px;
+	padding-top:5px;
+	cursor:default;
+	margin-top:5px;
+	cursor:pointer;
+}
+
+
+
+
+/* TOOLTIP 2 TOOLTIP */
+div.SC_ToolTip2 {
+	-moz-box-shadow:3px 3px 5px 0px #000;
+	-webkit-box-shadow:3px 3px 5px 0px #000;
+	box-shadow:3px 3px 5px 0px #000;
+	background:url('../images/showcase/tooltip_bg.png') repeat-x top;
+}
+
+/* TOOLTIP 2 CONTENT */
+div.SC_ToolTip2_Content {
+	padding:10px 15px 15px 10px;
+	cursor:pointer;
+}
+
+/* TOOLTIP 2 IMAGE */
+img.SC_ToolTip2_Image {
+	width:90px;
+	height:74px;
+	float:left;
+	margin-right:15px;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	margin-top:3px;
+	cursor:pointer;
+}
+
+/* TOOLTIP 2 HEADER */
+h2.SC_ToolTip2_Header {
+	font-family:'TitilliumText22LMedium';
+	font-size:20px;
+	color:#FFF;
+	cursor:pointer;
+}
+
+/* TOOLTIP 2 TEXT */
+p.SC_ToolTip2_Text {
+	font-family:Verdana, Geneva, sans-serif;
+	font-size:16px;
+	line-height:21px;
+	color:#ececec;
+	padding-right:5px;
+	padding-top:5px;
+	cursor:default;
+	margin-top:5px;
+	cursor:pointer;
+}
+
+
+
+/***************************************************************************************************/
+/* C. LIGHTBOX STYLING */
+/***************************************************************************************************/
+/* APPLIES TO ALL LIGHTBOXES */
+.SC_Lightbox {
+	background-color:#f5f5f5;
+	border:4px solid #272727;
+	-moz-box-shadow:4px 4px 10px 0px #000;
+	-webkit-box-shadow:4px 4px 10px 0px #000;
+	box-shadow:4px 4px 10px 0px #000;
+	-webkit-background-clip: padding-box;
+}
+
+
+/* LIGHTBOX 1 LIGHTBOX */
+.SC_Lightbox1 {background:#580405 url('../images/showcase/lightbox1_image.png') no-repeat bottom;}
+
+/* LIGHTBOX 1 TEXT */
+p.SC_Lightbox1_Text {
+	font-family:'TitilliumText22LRegular';
+	color:#333;
+	line-height:22px;
+	font-size:16px;
+	margin-top:75px;
+	cursor:default;
+	margin-left:238px;
+	width:250px;
+}
+
+/* LIGHTBOX 2 LIGHTBOX */
+.SC_Lightbox2 {background:#580405 url('../images/showcase/lightbox2_image.png') no-repeat bottom;}
+
+/* LIGHTBOX 2 TEXT */
+p.SC_Lightbox2_Text {font-family:'TitilliumText22LRegular';color:#333;line-height:22px;font-size:16px;margin-top:75px;cursor:default;margin-left:238px;width:250px;}
+
+
+
+
+/* LIGHTBOX 2 TEXT */
+p.SC_Lightbox2_Text {
+	font-family:'TitilliumText22LRegular';
+	color:#333;
+	line-height:22px;
+	font-size:16px;
+	margin-top:75px;
+	cursor:default;
+	margin-left:238px;
+	width:250px;
+}
+
+
+/***************************************************************************************************/
+/* D. LIGHTBOX CONTROLS */
+/***************************************************************************************************/
+/* LIGHTBOX CONTROL BAR - MAIN STYLING */
+.SC_Lightbox_Controls{width:100%;height:42px;background:#ececec url('../images/showcase/title_repeat.png') repeat-x;border-bottom:2px solid #040707;-moz-border-top-left-radius:8px;-moz-border-top-right-radius:8px;-webkit-border-top-left-radius:8px;-webkit-border-top-right-radius:8px;border-top-left-radius:8px;border-top-right-radius:8px;overflow:hidden;display:block;}
+.SC_Lightbox_Controls_Container {padding-right:10px;}/* CONTROLS POSITION OF THREE BUTTONS */
+/* LIGHTBOX CLOSE BUTTON */
+.SC_Lightbox_Controls .close {background:url('../images/showcase/close_SC.png') no-repeat;background-position:left;width:28px;height:28px;margin-left:8px;margin-top:5px;} 
+/* LIGHTBOX PREVIOUS BUTTON */
+.SC_Lightbox_Controls .prev {background:url('../images/showcase/prev_SC.png') no-repeat;background-position:left;width:21px;height:28px;margin-top:5px;}
+/* LIGHTBOX NEXT BUTTON */
+.SC_Lightbox_Controls .next {background:url('../images/showcase/next_SC.png') no-repeat;background-position:left;width:21px;height:28px;margin-left:5px;margin-top:5px;}

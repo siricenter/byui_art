@@ -39,7 +39,7 @@ hr {
 	border: 1px solid black;
 	/*box-shadow: 0px 3px 3px;*/
 	margin-bottom: 20px;
-	height: 250px;
+	min-height: 250px;
 	overflow: hidden;
 }
 
@@ -60,8 +60,11 @@ hr {
 
 .tile div h2 {
 	margin: 0 auto;
-	width: -moz-max-content;
-	width: -webkit-max-content;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
 }
 
 .comment-block textarea {
