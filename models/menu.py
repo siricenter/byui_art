@@ -20,29 +20,29 @@ response.menu = [
     (T('Home'),URL('default','index')==URL(),URL('default','index'),[]),
     (T('Collections'),URL(),URL(),coll_list)
     ]
-if admin or collection_admin or comment_moderator: 
+if admin or collection_admin or comment_moderator:
     response.menu += [(T('Manage'),URL(),URL(),submenu)]
 
 ### Populating the collection list
-for coll in collections: 
+for coll in collections:
     coll_list += [
         (T(coll.f_name),URL('default','collection_details',vars=dict(collectionId=coll.id))==URL(),URL('default','collection_details',vars=dict(collectionId=coll.id)),[])
     ]
 
 ### Populating the Management submenu
 # TODO: Determine roles and adjust logic here to represent them
-if admin: 
+if admin:
     submenu += [
         (T('Roles'),URL('cms','roles_manage')==URL(),URL('cms','roles_manage'),[]),
         (T('Users'),URL('cms','users_manage')==URL(),URL('cms','users_manage'),[]),
         (T('Exhibits'),URL('cms','exhibits_manage')==URL(),URL('cms','exhibits_manage'),[]),
-        (T('Collection'),URL('cms','display_manage')==URL(),URL('cms','display_manage'),[])
+        (T('Collections'),URL('cms','display_manage')==URL(),URL('cms','display_manage'),[])
     ]
 if collection_admin or admin:
     submenu += [
         (T('Items'),URL('cms','items_manage')==URL(),URL('cms','items_manage'),[])
     ]
-if comment_moderator or collection_admin or admin: 
+if comment_moderator or collection_admin or admin:
     submenu += [
         (T('Comments'),URL('cms','comments_manage')==URL(),URL('cms','comments_manage'),[]),
         (T('QR Retrieval'),URL('cms','qrret')==URL(),URL('cms','qrret'),[]),

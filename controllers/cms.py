@@ -116,8 +116,11 @@ def qrret():
 ##################################
 
 # Imports for all functions are here
+import os
 import uuid
 from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw
 import qrcode
 
 # Oncreate function from the item_manage view
@@ -125,7 +128,7 @@ def item_create(form):
     record = db(db.geo_item.f_name == request.vars.f_name).select().first()
     if record.f_qrcode == None:
         arg = str(record.id)
-        path = 'http://siri.pythonanywhere.com/mqr/default/item_details?itemId=' + arg + '&qr=True'
+        path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
         code = qrcode.make(path)
         qrName='geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
         code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
@@ -145,7 +148,7 @@ def item_create(form):
 def coll_create(form):
     record = db(db.geo_collection.f_name == request.vars.f_name).select().first()
     arg = str(record.id)
-    path = 'http://siri.pythonanywhere.com/mqr/default/collection_details?collectionId=' + arg + '&qr=True'
+    path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
     code = qrcode.make(path)
     qrName='geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
@@ -156,7 +159,7 @@ def coll_create(form):
 def exhi_create(form):
     record = db(db.geo_exhibit.f_name == request.vars.f_name).select().first()
     arg = str(record.id)
-    path = 'http://siri.pythonanywhere.com/mqr/default/exhibit_details?exhibitId=' + arg + '&qr=True'
+    path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
     code = qrcode.make(path)
     qrName='geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
@@ -227,3 +230,101 @@ def qrmake(codes, size_in):
     background.save(request.folder + 'static/temp/' + qrName, 'JPEG')
     images += [qrName]
     return images
+
+# fix qr codes that were going to the wrong place
+@auth.requires(admin)
+def fix_qr():
+    response.metatitle += " - Fix QR Codes"
+    response.title = "Admin"
+    response.subtitle = "Stuff"
+    exhibits = db(db.geo_exhibit).select()
+    collections = db(db.geo_collection).select()
+    items = db(db.geo_item).select()
+
+    item = db(db.geo_item).select().first()
+    arg = str(item.id)
+    path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
+    code = qrcode.make(path)
+    qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
+    folder = request.folder
+    code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    qr_text(qrName, item.f_name, item.f_alt5)
+    item.update_record(f_qrcode=qrName)
+
+    # for exhibit in exhibits:
+    #     arg = str(exhibit.id)
+    #     path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
+    #     code = qrcode.make(path)
+    #     qrName = 'geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
+    #     folder = request.folder
+    #     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    #     exhibit.update_record(f_qrcode=qrName)
+
+    # for collection in collections:
+    #     arg = str(collection.id)
+    #     path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
+    #     code = qrcode.make(path)
+    #     qrName = 'geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
+    #     folder = request.folder
+    #     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    #     collection.update_record(f_qrcode=qrName)
+
+    # for item in items:
+    #     arg = str(item.id)
+    #     path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
+    #     code = qrcode.make(path)
+    #     qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
+    #     folder = request.folder
+    #     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    #     item.update_record(f_qrcode=qrName)
+
+    #record = db(db.geo_collection.f_name == request.vars.f_name).select().first()
+    #arg = str(record.id)
+    #path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
+    #code = qrcode.make(path)
+    #qrName='geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
+    #code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    #record.update_record(f_qrcode=qrName)
+    return locals()
+
+# add text to the qr code to identify where it should go
+@auth.requires(admin)
+def qr_text(filename, topTxt, bottomTxt):
+    path = os.path.join(request.folder,'uploads/qrcodes',filename)
+    img = Image.open(path)
+    # get the width and height for adjustment
+    (width, height) = img.size
+    adjHeight = height-25
+    # adding in the text
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',20)
+    draw.text((10, 10),topTxt,100,font=font)
+    draw.text((10, adjHeight),bottomTxt,100,font=font)
+    # re-save
+    img.save(request.folder + 'uploads/qrcodes/' + filename, 'JPEG')
+
+    # # original test code
+    # tst = db(db.geo_item).select().first()
+    # tsttarget = 'evancaldwell.com'
+    # tstqrName = 'toEvan.jpg'
+    # tstcode = qrcode.make(tsttarget)
+    # # saving
+    # tstcode.save(request.folder + 'uploads/tst/' + tstqrName, 'JPEG')
+    # # reopen image to add text
+    # folder = request.folder
+    # midpath = 'byui_art/default/download/tst/'
+    # fullpath = os.path.join(request.folder,'uploads/tst',tstqrName)
+    # tstimg = Image.open(fullpath)
+    # # get the width and height for adjustment
+    # (width, height) = tstimg.size
+    # adjHeight = height-25
+    # # adding in the text
+    # draw = ImageDraw.Draw(tstimg)
+    # font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',15)
+    # draw.text((2, 2),"Evan Caldwell",100,font=font)
+    # draw.text((2, adjHeight),"evancaldwell.com",100,font=font)
+    # # re-save
+    # tstimg.save(request.folder + 'uploads/tst/' + tstqrName, 'JPEG')
+
+
+

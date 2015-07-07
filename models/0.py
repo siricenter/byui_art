@@ -2,7 +2,7 @@ from gluon.storage import Storage
 settings = Storage()
 
 settings.migrate = True
-settings.metatitle = 'Geology Musuem'
+settings.metatitle = 'BYU-I Art'
 settings.title = 'QR Platform'
 settings.subtitle = 'Rich content, ease of use, quality of work'
 settings.author = 'Evan Caldwell'

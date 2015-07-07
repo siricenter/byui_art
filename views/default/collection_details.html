@@ -1,29 +1,6 @@
 {{extend 'layout.html'}}
 {{if collection:}}
 <div class="row">
-<div class="slider span12">
-    <!-- TODO: format the slider row so that images don't  overlap the rest of the content. -->
-    {{#for item in items:}}
-        {{#=A(IMG(_src=URL('download',args=item.f_image), _alt =item.f_name), _href=URL('items_details, vars=dict(itemId=item.id)))}}   
-    {{#pass}}
-</div>
-
-<div class="tag-line">
-    <p>{{#=group.tagline}}</p> 
-    <h3 class="span12 text-center">This is a short tagline identifying the collection</h3>
-</div>
-
-<div class="featured">
-    <!-- <img src=""> -->
-    <p class="span4">this would be a spot for a main description</p>
-    <ul class="span8">
-    <!-- TODO: Figure out what we want to do with these featured items -->
-    {{#for item in featuredItems:}}
-        <li>featured item 1</li>
-        <li>featured item 2</li>
-        <li>featured item 3</li>
-    </ul>
-</div>
 {{=DIV(H2('Items in this Collection'), _class=" span12")}}
 {{for item in items:}}
     {{=DIV(A(DIV(IMG(_src=URL('download', args=item.f_image), _alt=item.f_name, _title=item.f_name), H2(item.f_name)), _href=URL('item_details', vars=dict(itemId=item.id))), _class="tile span4")}}
