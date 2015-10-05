@@ -121,6 +121,7 @@ import uuid
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
+from PIL import ImageOps
 import qrcode
 
 # Oncreate function from the item_manage view
@@ -168,10 +169,21 @@ def exhi_create(form):
 # Onvalidation function for the qrret* view
 def qrparse(form):
     codes = []
-    codes += form.vars.retitems
-    codes += form.vars.retcolls
+    retitems = form.vars.retitems
+    retcolls = form.vars.retcolls
+    if type(retitems) is list:
+        for item in retitems:
+            codes.append(item)
+    else:
+        codes.append(retitems)
+    if type(retcolls) is list:
+        for item in retcolls:
+            codes.append(item)
+    else:
+        codes.append(retcolls)
     size = form.vars.retsizes
     session.qr = qrmake(codes, size)
+    session.codes = codes
 
 
 # This function accepts an array of filenames and programatically opens the images and pastes them
@@ -190,11 +202,14 @@ def qrmake(codes, size_in):
     dimen = (size,size)
     for i in xrange(len(codes)):
         code = codes[i]
+        session.code = code
 
         # Tries to open the image and continues to the next iteration if it fails
         try:
-            img = Image.open(request.folder + 'uploads/' + code)
-        except:
+            img = Image.open(request.folder + 'download/' + code) #TODO: not getting to the right folder, see line 307
+        except Exception as e:
+            raise e
+            session.qrmake_error = "there was an error with: " + code
             continue
         img_w,img_h=img.size
         if img_w > size:
@@ -237,47 +252,53 @@ def fix_qr():
     response.metatitle += " - Fix QR Codes"
     response.title = "Admin"
     response.subtitle = "Stuff"
-    exhibits = db(db.geo_exhibit).select()
-    collections = db(db.geo_collection).select()
+    #exhibits = db(db.geo_exhibit).select()
+    #collections = db(db.geo_collection).select()
     items = db(db.geo_item).select()
 
-    item = db(db.geo_item).select().first()
-    arg = str(item.id)
-    path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
-    code = qrcode.make(path)
-    qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
-    folder = request.folder
-    code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-    qr_text(qrName, item.f_name, item.f_alt5)
-    item.update_record(f_qrcode=qrName)
+    
+    #comment out
+    #item = db(db.geo_item).select().first()
+    #arg = str(item.id)
+    #path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
+    #code = qrcode.make(path)
+    #qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
+    #folder = request.folder
+    #code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    #qr_text(qrName, item.f_name, item.f_alt5) #add into each for loop below
+    #item.update_record(f_qrcode=qrName)
 
-    # for exhibit in exhibits:
-    #     arg = str(exhibit.id)
-    #     path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
-    #     code = qrcode.make(path)
-    #     qrName = 'geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
-    #     folder = request.folder
-    #     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-    #     exhibit.update_record(f_qrcode=qrName)
+    for exhibit in exhibits:
+        arg = str(exhibit.id)
+        path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
+        code = qrcode.make(path)
+        qrName = 'geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
+        folder = request.folder
+        code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+        qr_text(qrName, exhibit.f_name, '')
+        exhibit.update_record(f_qrcode=qrName)
 
-    # for collection in collections:
-    #     arg = str(collection.id)
-    #     path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
-    #     code = qrcode.make(path)
-    #     qrName = 'geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
-    #     folder = request.folder
-    #     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-    #     collection.update_record(f_qrcode=qrName)
+    for collection in collections:
+        arg = str(collection.id)
+        path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
+        code = qrcode.make(path)
+        qrName = 'geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
+        folder = request.folder
+        code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+        qr_text(qrName, collection.f_name, collection.f_location)
+        collection.update_record(f_qrcode=qrName)
 
-    # for item in items:
-    #     arg = str(item.id)
-    #     path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
-    #     code = qrcode.make(path)
-    #     qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
-    #     folder = request.folder
-    #     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-    #     item.update_record(f_qrcode=qrName)
+    for item in items:
+        arg = str(item.id)
+        path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
+        code = qrcode.make(path)
+        qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
+        folder = request.folder
+        code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+        qr_text(qrName, item.f_name, item.f_alt5)
+        item.update_record(f_qrcode=qrName)
 
+    #dont touch
     #record = db(db.geo_collection.f_name == request.vars.f_name).select().first()
     #arg = str(record.id)
     #path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
@@ -289,17 +310,45 @@ def fix_qr():
 
 # add text to the qr code to identify where it should go
 @auth.requires(admin)
-def qr_text(filename, topTxt, bottomTxt):
+def qr_text(filename, rightTxt, leftTxt):
     path = os.path.join(request.folder,'uploads/qrcodes',filename)
     img = Image.open(path)
     # get the width and height for adjustment
     (width, height) = img.size
-    adjHeight = height-25
+    adjHeight = height-40
+    adjWidthRotate  = width-68
+    adjHeightRotate = -1 * (540 - height)
+
     # adding in the text
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',20)
-    draw.text((10, 10),topTxt,100,font=font)
-    draw.text((10, adjHeight),bottomTxt,100,font=font)
+    draw.text((40, 18),"Scan here for more details",100,font=font)
+    draw.text((40, adjHeight),"Scan here for more details",100,font=font)
+    
+    #cutting off words if too long for the qr code
+    if len(leftTxt)  >= 25:
+        leftTxt = leftTxt[:25]
+        leftTxt = leftTxt + '...'
+    if len(rightTxt) >= 25:
+        rightTxt = rightTxt[:25]
+        rightTxt = rightTxt + '...'
+    
+    #code to be used to rotate the text
+    txtL=Image.new('L', (500,50))
+    drawName = ImageDraw.Draw(txtL)
+    drawName.text( (0, 0), leftTxt,  font=font, fill=255)
+    rotationLeft=txtL.rotate(90,  expand=1)
+    #text is then pasted onto the image  15, -100
+    img.paste( ImageOps.colorize(rotationLeft, (255,255,255), (180,180,180)), (15,adjHeightRotate),  rotationLeft)
+
+    #Same snippit of code as above, but for the other side of the image
+    txtR=Image.new('L', (500,50))
+    drawName = ImageDraw.Draw(txtR)
+    drawName.text( (0, 0), rightTxt,  font=font, fill=255)
+    rotationRight=txtR.rotate(270,  expand=1)
+    #385, 40
+    img.paste( ImageOps.colorize(rotationRight, (255,255,255), (180,180,180)), (adjWidthRotate,40),  rotationRight)
+    
     # re-save
     img.save(request.folder + 'uploads/qrcodes/' + filename, 'JPEG')
 
@@ -325,6 +374,3 @@ def qr_text(filename, topTxt, bottomTxt):
     # draw.text((2, adjHeight),"evancaldwell.com",100,font=font)
     # # re-save
     # tstimg.save(request.folder + 'uploads/tst/' + tstqrName, 'JPEG')
-
-
-

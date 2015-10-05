@@ -268,6 +268,7 @@ p.SC_Lightbox1_Text {
 /* LIGHTBOX 2 LIGHTBOX */
 .SC_Lightbox2 {background:#580405 url('../images/showcase/lightbox2_image.png') no-repeat bottom;}
 
+
 /* LIGHTBOX 2 TEXT */
 p.SC_Lightbox2_Text {font-family:'TitilliumText22LRegular';color:#333;line-height:22px;font-size:16px;margin-top:75px;cursor:default;margin-left:238px;width:250px;}
 
@@ -299,3 +300,36 @@ p.SC_Lightbox2_Text {
 .SC_Lightbox_Controls .prev {background:url('../images/showcase/prev_SC.png') no-repeat;background-position:left;width:21px;height:28px;margin-top:5px;}
 /* LIGHTBOX NEXT BUTTON */
 .SC_Lightbox_Controls .next {background:url('../images/showcase/next_SC.png') no-repeat;background-position:left;width:21px;height:28px;margin-left:5px;margin-top:5px;}
+
+
+
+/***************************************************************************************************/
+/* MASONRY */
+/***************************************************************************************************/
+/* DESANDRO MASONRY TILING - MAIN STYLING */
+
+
+
+div#masonry { 
+  display: flex; 
+  flex-direction: column; 
+  flex-wrap: wrap;
+  height: 500vw;
+  max-height: 5100px; /*TODO add in media querys*/
+  font-size: 0;  
+}
+div#masonry img {  
+  width: 100%;
+  
+} 
+
+
+/* fallback for earlier versions of Firefox */
+
+@supports not (flex-wrap: wrap) {
+  div#masonry { display: block; }
+  div#masonry img {  
+  display: inline-block;
+  vertical-align: top;
+  }
+}

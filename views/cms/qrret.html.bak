@@ -16,7 +16,5 @@
         {{=P("codes:")}}
         {{=session.codes}}
         {{=session.code}}
-        {{=P("error:")}}
-        {{=session.qrmake_error}}
 	</div>
 </div>
