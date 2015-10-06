@@ -2,7 +2,9 @@
 {{if exhibit:}}
 <div class="row">
 {{=DIV(H2('Collections in this exhibit'), _class="span12")}}
-
+</div>
+    <div class="row">
+    <div id="masonry" style="height: {{=maxHeight}}px;">
     {{for collection in collections:
         for item in exhibit_items:
             if item.f_collection_id == collection.id:
@@ -11,5 +13,7 @@
         pass
         =DIV(A(DIV(IMG(_src=URL('default/download', thumb), _alt=collection.f_name), H2(collection.f_name),P(collection.f_location)), _href=URL('collection_details',vars=dict(collectionId=collection.id))), _id=collection.f_name+"-collection",_class="tile span4")
     pass}}
-     </div>  
+               </div>
+</div>
+
 {{pass}}

@@ -6,7 +6,7 @@
  <div class="row">
     <div id="masonry">
 {{for item in items:}} 
-    {{=DIV(A(DIV(IMG(_src=URL('download', args=item.f_image), _alt=item.f_name, _title=item.f_name), H2(item.f_name)), _href=URL('item_details', vars=dict(itemId=item.id))), _class="tile span4")}}
+    {{=DIV(A(DIV(IMG(_src=URL('download', args=item.f_thumb), _alt=item.f_name, _title=item.f_name), H2(item.f_name)), _href=URL('item_details', vars=dict(itemId=item.id))), _class="tile span4")}}
 {{pass}}
      </div>
 </div>

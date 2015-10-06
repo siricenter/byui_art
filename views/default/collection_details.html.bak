@@ -2,9 +2,15 @@
 {{if collection:}}
 <div class="row">
 {{=DIV(H2('Items in this Collection'), _class=" span12")}}
-{{for item in items:}}
+</div>
+ <div class="row">
+    <div id="masonry">
+{{for item in items:}} 
     {{=DIV(A(DIV(IMG(_src=URL('download', args=item.f_image), _alt=item.f_name, _title=item.f_name), H2(item.f_name)), _href=URL('item_details', vars=dict(itemId=item.id))), _class="tile span4")}}
 {{pass}}
+     </div>
+</div>
+<div class="row">
 <div class="span12">
     {{=HR()}}
     <div class="span6 comment-block">

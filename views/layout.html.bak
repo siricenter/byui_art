@@ -212,7 +212,7 @@
         var totalHeight = 0;
         // get the height of each image
         for (var i=0; i<tiles.length; i++) {
-            totalHeight += tiles[i].offsetHeight + 18
+            totalHeight += tiles[i].offsetHeight + 20
         }
         var maxHeight = (totalHeight / colls) + 200;
         return maxHeight
