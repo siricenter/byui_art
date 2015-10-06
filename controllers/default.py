@@ -92,6 +92,27 @@ def museum_mural():
         response.flash = 'Please use navigation from index to select a collecion'
     return locals()
 
+# determining the max height for a collection of items to make flexbox more balanced between 3 columns
+def find_max_height(items, colls):
+    session.itemCreateException = ""
+    #declaring maxHeight to find average column size
+    totalHeight = 0
+    
+    # get the height of each image
+    for item in items:
+        #use PIL to open image and find height
+        if item.f_thumb is not None and len(item.f_thumb) > 0:
+            try:
+                thumb = Image.open(request.folder + 'uploads/thumbs/' + item.f_thumb)
+                # get the image height
+                (width, height) = thumb.size
+                totalHeight += height + 62
+            except Exception as e:
+                session.itemCreateException = "there was a problem finding the image's height for " + e
+    maxHeight = (totalHeight / colls) + 200
+    session.maxHeight = maxHeight
+    return maxHeight
+
 # ## TODO: build tours ##
 # def view_tours():
 #     return dict()

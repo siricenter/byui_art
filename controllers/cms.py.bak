@@ -40,7 +40,7 @@ def items_manage():
             db.geo_item.f_collection_id,
             db.geo_item.f_description,
             db.geo_item.f_tagline,
-            #db.geo_item.f_featured,
+            db.geo_item.f_featured,
             db.geo_item.is_active,
             db.geo_item.f_qrcode))
     return dict(form=form)
@@ -144,6 +144,55 @@ def item_create(form):
         except:
             pass
     return dict()
+
+#Fixing images and using the thumbnail command to create 'thumbnails' for the collections page
+def fix_thumbs():
+    response.metatitle += " - Fix Thumbnails"
+    response.title = "Fix Thumbnails"
+    response.subtitle = "This will overwrite existing Thumbnails"
+    exhibits = db(db.geo_exhibit).select()
+    collections = db(db.geo_collection).select()
+    #items = db(db.geo_item).select()
+
+    counter = 0
+    for exhibit in exhibits:
+        try:
+            imgPath = request.folder + 'uploads/' + exhibit.f_image
+            thumbName = 'geo_exhibit.f_thumb.%s.%s.jpg' % (uuid.uuid4(), exhibit.id)
+            thumb = Image.open(request.folder + 'uploads/' + exhibit.f_image)
+            thumb.thumbnail((350, 10000), Image.ANTIALIAS)
+            thumb.save(request.folder + 'uploads/thumbs/' + thumbName, 'JPEG')
+            exhibit.update_record(f_thumb=thumbName)
+        except:
+            session.exhibitCreateException = "there was a problem updating the image in exhibit_create: " + exhibit.f_name
+            counter += 1
+
+    for collection in collections:
+        try:
+            imgPath = request.folder + 'uploads/' + collection.f_image
+            thumbName = 'geo_collection.f_thumb.%s.%s.jpg' % (uuid.uuid4(), collection.id)
+            thumb = Image.open(request.folder + 'uploads/' + collection.f_image)
+            thumb.thumbnail((350, 10000), Image.ANTIALIAS)
+            thumb.save(request.folder + 'uploads/thumbs/' + thumbName, 'JPEG')
+            collection.update_record(f_thumb=thumbName)
+        except:
+            session.collectionCreateException = "there was a problem updating the image in coll_create: " + collection.f_name
+            counter += 1
+
+#    for item in items:
+ #       try:
+  #          imgPath = request.folder + 'uploads/' + item.f_image
+   #         thumbName = 'geo_item.f_thumb.%s.%s.jpg' % (uuid.uuid4(), item.id)
+    #        thumb = Image.open(request.folder + 'uploads/' + item.f_image)
+     #       thumb.thumbnail((350, 10000), Image.ANTIALIAS)
+      #      thumb.save(request.folder + 'uploads/thumbs/' + thumbName, 'JPEG')
+       #     item.update_record(f_thumb=thumbName)
+        #except:
+         #   session.itemCreateException = "there was a problem updating the image in item_create: " + item.f_name
+          #  counter += 1
+
+    #returning locals
+    return locals()
 
 # Oncreate function from the collection_manage view
 def coll_create(form):
@@ -325,7 +374,8 @@ def qr_text(filename, rightTxt, leftTxt):
     draw.text((40, 18),"Scan here for more details",100,font=font)
     draw.text((40, adjHeight),"Scan here for more details",100,font=font)
     
-    if len(leftTxt) >= 25:
+    #cutting off words if too long for the qr code
+    if len(leftTxt)  >= 25:
         leftTxt = leftTxt[:25]
         leftTxt = leftTxt + '...'
     if len(rightTxt) >= 25:
