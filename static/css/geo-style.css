@@ -39,7 +39,6 @@ hr {
 	border: 1px solid black;
 	/*box-shadow: 0px 3px 3px;*/
 	margin-bottom: 20px;
-	min-height: 250px;
 	overflow: hidden;
 }
 
@@ -74,6 +73,11 @@ hr {
 
 
 /* ===== Item Details Styles ===== */
+
+.itemImg {
+    width: 100%;
+}
+
 .featured ul li {
 	margin: 15px 0;
 }
@@ -310,12 +314,12 @@ p.SC_Lightbox2_Text {
 
 
 
+
 div#masonry { 
   display: flex; 
   flex-direction: column; 
   flex-wrap: wrap;
   height: 500vw;
-  max-height: 5100px; /*TODO add in media querys*/
   font-size: 0;  
 }
 div#masonry img {  

@@ -1,0 +1,6 @@
+{{extend 'layout.html'}}
+<h1>This is the cms/qr_text.html template</h1>
+{{=DIV(P("path: "),P(path))}}
+{{=IMG(_src=path)}}
+
+{{=BEAUTIFY(response._vars)}}

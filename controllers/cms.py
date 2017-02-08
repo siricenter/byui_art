@@ -42,7 +42,9 @@ def items_manage():
             db.geo_item.f_tagline,
             db.geo_item.f_featured,
             db.geo_item.is_active,
-            db.geo_item.f_qrcode))
+            db.geo_item.f_qrcode
+            ))
+    
     return dict(form=form)
 
 @auth.requires(comment_moderator or collection_admin or admin)
@@ -118,6 +120,7 @@ def qrret():
 # Imports for all functions are here
 import os
 import uuid
+from pyshorteners import Shortener
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
@@ -130,19 +133,33 @@ def item_create(form):
     if record.f_qrcode == None:
         arg = str(record.id)
         path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
-        code = qrcode.make(path)
+        tiny = ""
+        shortSuccess = False
+        try:
+            shortener = Shortener('Tinyurl')
+            tiny = "{}".format(shortener.short(path))
+            session.tinyCreateException = tiny
+            shortSuccess = True
+        except:
+            session.tinyCreateException = "There was a problem with the url shortener. Please try again."
+
+        if shortSuccess:
+            code = qrcode.make(tiny)
+        else:
+            code = qrcode.make(path)
         qrName='geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
         code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
         record.update_record(f_qrcode=qrName)
-    if record.f_image != form.vars.f_image:
-        try:
-            image = Image.open(request.folder + 'uploads/' + form.vars.f_image)
-            image.thumbnail((150, 150), Image.ANTIALIAS)
-            imgName='geo_item.f_thumb.%s.jpg' % (uuid.uuid4())
-            image.save(request.folder + 'uploads/thumbs/' + imgName, 'JPEG')
-            record.update_record(f_thumb=imgName)
-        except:
-            pass
+        qr_text(qrName, record.f_name, record.f_alt5, tiny)
+    try:
+        imgPath = request.folder + 'uploads/' + record.f_image
+        thumbName = 'geo_item.f_thumb.%s.%s.jpg' % (uuid.uuid4(), record.id)
+        thumb = Image.open(request.folder + 'uploads/' + record.f_image)
+        thumb.thumbnail((350, 10000), Image.ANTIALIAS)
+        thumb.save(request.folder + 'uploads/thumbs/' + thumbName, 'JPEG')
+        record.update_record(f_thumb=thumbName)
+    except:
+        session.itemCreateException = "there was a problem updating the image in item_create: " + record.f_name
     return dict()
 
 #Fixing images and using the thumbnail command to create 'thumbnails' for the collections page
@@ -199,9 +216,27 @@ def coll_create(form):
     record = db(db.geo_collection.f_name == request.vars.f_name).select().first()
     arg = str(record.id)
     path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
-    code = qrcode.make(path)
+    tiny = ""
+    #######################################################################
+    ################## TESTING PYSHORTENERS : TINYURL #####################
+    #######################################################################
+    
+    try:
+        shortener = Shortener('TinyurlShortener')
+        tiny = "{}".format(shortener.short(path))
+    except:
+        session.tinyCreateException = "There was a problem with the url shortener. Please try again."
+    
+    #######################################################################
+    ###################### END PYSHORTENERS : TINYURL #####################
+    #######################################################################
+    
+
+    
+    code = qrcode.make(tiny)
     qrName='geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    qr_text(qrName, record.f_name, record.f_location, tiny)
     record.update_record(f_qrcode=qrName)
     return dict()
 
@@ -210,9 +245,17 @@ def exhi_create(form):
     record = db(db.geo_exhibit.f_name == request.vars.f_name).select().first()
     arg = str(record.id)
     path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
-    code = qrcode.make(path)
+    tiny = ""
+    try:
+        shortener = Shortener('TinyurlShortener')
+        tiny = "{}".format(shortener.short(path))
+    except:
+        session.tinyCreateException = "There was a problem with the url shortener. Please try again."
+    
+    code = qrcode.make(tiny)
     qrName='geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
     code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+    qr_text(qrName, record.f_name, '', tiny)
     record.update_record(f_qrcode=qrName)
 
 # Onvalidation function for the qrret* view
@@ -260,8 +303,8 @@ def qrmake(codes, size_in):
             img = Image.open(path)
             session.qrmakeError = "no error to open the image"
         except Exception as e:
-            raise e
-            session.qrmake_error = "there was an error with: " + code
+#             raise e
+            session.qrmakeError = "there was an error with: " + code
             continue
         img_w,img_h=img.size
         if img_w > size:
@@ -304,9 +347,10 @@ def fix_qr():
     response.metatitle += " - Fix QR Codes"
     response.title = "Admin"
     response.subtitle = "Stuff"
+    shortener = Shortener('TinyurlShortener')
     #exhibits = db(db.geo_exhibit).select()
     #collections = db(db.geo_collection).select()
-    items = db(db.geo_item).select()
+    items = db(db.geo_item.id >= 321).select()
 
     
     #comment out
@@ -320,34 +364,45 @@ def fix_qr():
     #qr_text(qrName, item.f_name, item.f_alt5) #add into each for loop below
     #item.update_record(f_qrcode=qrName)
 
-    for exhibit in exhibits:
-        arg = str(exhibit.id)
-        path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
-        code = qrcode.make(path)
-        qrName = 'geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
-        folder = request.folder
-        code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-        qr_text(qrName, exhibit.f_name, '')
-        exhibit.update_record(f_qrcode=qrName)
+#     for exhibit in exhibits:
+#         arg = str(exhibit.id)
+#         path = 'http://siri.pythonanywhere.com/byui_art/default/exhibit_details?exhibitId=' + arg + '&qr=True'
+        
+#         shortener = Shortener('TinyurlShortener')
+#         tiny = "{}".format(shortener.short(path))
+        
+#         code = qrcode.make(tiny)
+#         qrName = 'geo_exhibit.f_qrcode.%s.jpg' % (uuid.uuid4())
+#         folder = request.folder
+#         code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+#         qr_text(qrName, exhibit.f_name, '', tiny)
+#         exhibit.update_record(f_qrcode=qrName)
 
-    for collection in collections:
-        arg = str(collection.id)
-        path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
-        code = qrcode.make(path)
-        qrName = 'geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
-        folder = request.folder
-        code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-        qr_text(qrName, collection.f_name, collection.f_location)
-        collection.update_record(f_qrcode=qrName)
+#     for collection in collections:
+#         arg = str(collection.id)
+#         path = 'http://siri.pythonanywhere.com/byui_art/default/collection_details?collectionId=' + arg + '&qr=True'
+        
+#         shortener = Shortener('TinyurlShortener')
+#         tiny = "{}".format(shortener.short(path))
+        
+#         code = qrcode.make(tiny)
+#         qrName = 'geo_collection.f_qrcode.%s.jpg' % (uuid.uuid4())
+#         folder = request.folder
+#         code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
+#         qr_text(qrName, collection.f_name, collection.f_location, tiny)
+#         collection.update_record(f_qrcode=qrName)
 
     for item in items:
         arg = str(item.id)
         path = 'http://siri.pythonanywhere.com/byui_art/default/item_details?itemId=' + arg + '&qr=True'
+        
+#         tiny = "{}".format(shortener.short(path))
+        
         code = qrcode.make(path)
         qrName = 'geo_item.f_qrcode.%s.jpg' % (uuid.uuid4())
         folder = request.folder
         code.save(request.folder + 'uploads/qrcodes/' + qrName, 'JPEG')
-        qr_text(qrName, item.f_name, item.f_alt5)
+        qr_text(qrName, item.f_name, item.f_alt5, item.f_name)
         item.update_record(f_qrcode=qrName)
 
     #dont touch
@@ -362,7 +417,12 @@ def fix_qr():
 
 # add text to the qr code to identify where it should go
 @auth.requires(admin)
-def qr_text(filename, rightTxt, leftTxt):
+def qr_text(filename, rightTxt, leftTxt, tiny):
+    # original arguments: filename, rightTxt, leftTxt, tiny
+#     filename = "geo_item.f_qrcode.926f46be-9509-4548-a330-19c29ac63693.jpg"
+#     rightTxt = "150960"
+#     leftTxt = "Kimball"
+#     tiny = "tinyUrl.something.com"
     path = os.path.join(request.folder,'uploads/qrcodes',filename)
     img = Image.open(path)
     # get the width and height for adjustment
@@ -373,9 +433,9 @@ def qr_text(filename, rightTxt, leftTxt):
 
     # adding in the text
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',20)
-    draw.text((40, 18),"Scan here for more details",100,font=font)
-    draw.text((40, adjHeight),"Scan here for more details",100,font=font)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf',20)#20
+    draw.text((40, 18), tiny, 100, font=font)
+    draw.text((40, adjHeight),"Scan for details",100,font=font)
     
     #cutting off words if too long for the qr code
     if len(leftTxt)  >= 25:
@@ -426,3 +486,4 @@ def qr_text(filename, rightTxt, leftTxt):
     # draw.text((2, adjHeight),"evancaldwell.com",100,font=font)
     # # re-save
     # tstimg.save(request.folder + 'uploads/tst/' + tstqrName, 'JPEG')
+    # return locals()

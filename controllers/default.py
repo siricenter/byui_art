@@ -1,3 +1,11 @@
+import os
+import uuid
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw
+from PIL import ImageOps
+import qrcode
+
 # -*- coding: utf-8 -*-
 ### required - do no delete
 def user(): return dict(form=auth())
@@ -7,7 +15,8 @@ def call(): return service()
 
 def index():
     response.title = "Welcome to the QR Platform"
-    response.subtitle = "Take a few minutes to explore, learn and discover."
+#     response.subtitle = "Take a few minutes to explore, learn and discover."
+    response.subtitle = "Performing Maintenance."
     exhibits = db(db.geo_exhibit).select()
     return dict(exhibits=exhibits)
 
@@ -15,7 +24,13 @@ def error():
     return dict()
 
 def exhibit_details():
+#     redirect(URL('index'))
     exhibitId = request.vars['exhibitId']
+    userAgent = request.user_agent()
+    if (userAgent.is_mobile == True):
+        colls = 1
+    else:
+        colls = 3
     try:
         exhibit = db(db.geo_exhibit.id == exhibitId).select().first()
         response.metatitle += " - " + exhibit.f_name
@@ -23,15 +38,23 @@ def exhibit_details():
         response.subtitle = exhibit.f_description
         collections = db((db.geo_collection.f_exhibit_id == exhibitId) & (db.geo_collection.f_visible == True)).select()
         exhibit_items = db(db.geo_item.f_collection_id.belongs(collections)).select()
-        featuredItems = db((db.geo_item.f_featured == 1) & (db.geo_item.id.belongs(exhibit_items))).select()
+        height = find_max_height_collection(collections, colls, exhibit_items)
+        #featuredItems = db((db.geo_item.f_featured == 1) & (db.geo_item.id.belongs(exhibit_items))).select()
     except:
         response.title = 'Navigation Error'
         response.subtitle = 'Invalid exhibit'
         response.flash = 'Please use navigation from index to select an exhibit'
+    
     return locals()
 
 def collection_details():
+#     redirect(URL('index'))
     collectionId = request.vars['collectionId']
+    userAgent = request.user_agent()
+    if (userAgent.is_mobile == True):
+        colls = 1
+    else:
+        colls = 3
     try:
         collection = db(db.geo_collection.id == collectionId).select().first()
         response.metatitle += " - " + collection.f_name
@@ -39,27 +62,30 @@ def collection_details():
         response.subtitle = collection.f_location
         featuredItems = db((db.geo_item.f_collection_id == collectionId) & (db.geo_item.f_featured == 1)).select()
         items = db(db.geo_item.f_collection_id == collectionId).select()
+        height = find_max_height(items, colls)
         comments=db((db.t_coll_comment.f_collection_id == collectionId) & (db.t_coll_comment.f_status == 'Approved')).select()
     except:
         response.title = 'Navigation Error'
         response.subtitle = 'Invalid collection'
         response.flash = 'Please use navigation from index to select a collecion'
+   
     return locals()
 
 def item_details():
+#     redirect(URL('index'))
     itemId = request.vars['itemId']
     collection = request.vars['collection']
     try:
         item = db(db.geo_item.id == itemId).select().first()
         response.metatitle += " - " + item.f_name
         response.title = item.f_name
-        response.subtitle = item.f_tagline
-        if item.f_alt2:
-            location = parse_text(item.f_alt2)
+        response.subtitle = item.f_alt1
+#         if item.f_alt2:
+#             location = parse_text(item.f_alt)
         # if item.f_wiki:
         #     site = 'http://en.wikipedia.org/w/index.php?section=1&title=' + wiki_sub(item.f_wiki)
         #     wiki = wiki_open(site + '&printable=yes')
-        comments=db((db.t_item_comment.f_item_id == itemId) & (db.t_item_comment.f_status == "Approved")).select()
+        comments = db((db.t_item_comment.f_item_id == itemId) & (db.t_item_comment.f_status == "Approved")).select()
     except:
         response.title = 'Navigation Error'
         response.subtitle = 'Invalid item'
@@ -93,20 +119,52 @@ def museum_mural():
     return locals()
 
 # determining the max height for a collection of items to make flexbox more balanced between 3 columns
-def find_max_height(items, colls):
-    session.itemCreateException = ""
+def find_max_height_collection(collections, colls, exhibit_items):
+    session.maxHeightColException = "default"
+    session.position = 'top'
     #declaring maxHeight to find average column size
     totalHeight = 0
     
     # get the height of each image
+    for collection in collections:
+        session.position = 'collections for loop'
+        for item in exhibit_items:
+            session.position = 'exhibit_items for loop'
+            session.itemId = item
+            session.collFI = collection.f_featured_img
+            if item.id == collection.f_featured_img and item.id is not None:
+                session.position = 'featured image if'
+                #use PIL to open image and find height
+                try:
+                    thumb = Image.open(request.folder + 'uploads/thumbs/' + item.f_thumb)
+                    session.thumbSize = thumb.size
+                    # get the image height
+                    (width, height) = thumb.size
+                    totalHeight += height + 80
+                    session.position = "try bottom"
+                except Exception as e:
+                    session.maxHeightColException = "there was a problem finding the image's height for " + e
+    session.position = 'bottom'
+    height = (totalHeight / colls) + 400
+    session.height = height
+    return height
+
+
+
+
+def find_max_height(items, colls):
+    session.itemCreateException = ""
+    #declaring maxHeight to find average column size
+    totalHeight = 0
+    # get the height of each image
     for item in items:
         #use PIL to open image and find height
-        if item.f_thumb is not None and len(item.f_thumb) > 0:
+        if item.f_thumb is not None:
             try:
                 thumb = Image.open(request.folder + 'uploads/thumbs/' + item.f_thumb)
                 # get the image height
                 (width, height) = thumb.size
-                totalHeight += height + 62
+                totalHeight += height + 80
             except Exception as e:
                 session.itemCreateException = "there was a problem finding the image's height for " + e
     maxHeight = (totalHeight / colls) + 200
